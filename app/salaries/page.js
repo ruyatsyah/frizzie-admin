@@ -17,15 +17,35 @@ export default function SalariesPage() {
     }, []);
 
     const fetchSalaries = async () => {
-        const res = await fetch("/api/salaries");
-        const data = await res.json();
-        setSalaries(data);
+        try {
+            const res = await fetch("/api/salaries");
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                setSalaries(data);
+            } else {
+                console.error("Data is not an array:", data);
+                setSalaries([]);
+            }
+        } catch (e) {
+            console.error(e);
+            setSalaries([]);
+        }
     };
 
     const fetchTeachers = async () => {
-        const res = await fetch("/api/teachers");
-        const data = await res.json();
-        setTeachers(data);
+        try {
+            const res = await fetch("/api/teachers");
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                setTeachers(data);
+            } else {
+                console.error("Data is not an array:", data);
+                setTeachers([]);
+            }
+        } catch (e) {
+            console.error(e);
+            setTeachers([]);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -99,7 +119,7 @@ export default function SalariesPage() {
                         style={{ flex: 1, minWidth: "200px" }}
                     >
                         <option value="">Pilih Guru</option>
-                        {teachers.map((t) => (
+                        {Array.isArray(teachers) && teachers.map((t) => (
                             <option key={t._id} value={t._id}>{t.name}</option>
                         ))}
                     </select>
@@ -162,7 +182,7 @@ export default function SalariesPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {salaries.map((salary) => (
+                            {Array.isArray(salaries) && salaries.map((salary) => (
                                 <tr key={salary._id}>
                                     <td style={{ fontWeight: 500 }}>{salary.teacher?.name || "Guru Dihapus"}</td>
                                     <td>{salary.monthYear}</td>
@@ -193,7 +213,7 @@ export default function SalariesPage() {
                                     </td>
                                 </tr>
                             ))}
-                            {salaries.length === 0 && (
+                            {(!Array.isArray(salaries) || salaries.length === 0) && (
                                 <tr>
                                     <td colSpan="6" style={{ textAlign: "center", color: "var(--text-light)", padding: "32px" }}>Belum ada data gaji.</td>
                                 </tr>

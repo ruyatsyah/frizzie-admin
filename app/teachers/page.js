@@ -14,9 +14,19 @@ export default function TeachersPage() {
     }, []);
 
     const fetchTeachers = async () => {
-        const res = await fetch("/api/teachers");
-        const data = await res.json();
-        setTeachers(data);
+        try {
+            const res = await fetch("/api/teachers");
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                setTeachers(data);
+            } else {
+                console.error("Data is not an array:", data);
+                setTeachers([]);
+            }
+        } catch (e) {
+            console.error(e);
+            setTeachers([]);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -114,7 +124,7 @@ export default function TeachersPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {teachers.map((teacher) => (
+                            {Array.isArray(teachers) && teachers.map((teacher) => (
                                 <tr key={teacher._id}>
                                     <td style={{ fontWeight: 500 }}>{teacher.name}</td>
                                     <td>{teacher.contact}</td>
@@ -131,7 +141,7 @@ export default function TeachersPage() {
                                     </td>
                                 </tr>
                             ))}
-                            {teachers.length === 0 && (
+                            {(!Array.isArray(teachers) || teachers.length === 0) && (
                                 <tr>
                                     <td colSpan="4" style={{ textAlign: "center", color: "var(--text-light)", padding: "32px" }}>Belum ada data guru.</td>
                                 </tr>

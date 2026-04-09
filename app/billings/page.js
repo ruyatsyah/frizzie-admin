@@ -17,15 +17,35 @@ export default function BillingsPage() {
     }, []);
 
     const fetchBillings = async () => {
-        const res = await fetch("/api/billings");
-        const data = await res.json();
-        setBillings(data);
+        try {
+            const res = await fetch("/api/billings");
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                setBillings(data);
+            } else {
+                console.error("Data is not an array:", data);
+                setBillings([]);
+            }
+        } catch (e) {
+            console.error(e);
+            setBillings([]);
+        }
     };
 
     const fetchStudents = async () => {
-        const res = await fetch("/api/students");
-        const data = await res.json();
-        setStudents(data);
+        try {
+            const res = await fetch("/api/students");
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                setStudents(data);
+            } else {
+                console.error("Data is not an array:", data);
+                setStudents([]);
+            }
+        } catch (e) {
+            console.error(e);
+            setStudents([]);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -99,7 +119,7 @@ export default function BillingsPage() {
                         style={{ flex: 1, minWidth: "200px" }}
                     >
                         <option value="">Pilih Siswa</option>
-                        {students.map((s) => (
+                        {Array.isArray(students) && students.map((s) => (
                             <option key={s._id} value={s._id}>{s.name} - {s.grade}</option>
                         ))}
                     </select>
@@ -162,7 +182,7 @@ export default function BillingsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {billings.map((billing) => (
+                            {Array.isArray(billings) && billings.map((billing) => (
                                 <tr key={billing._id}>
                                     <td style={{ fontWeight: 500 }}>{billing.student?.name || "Siswa Dihapus"}</td>
                                     <td>{billing.monthYear}</td>
@@ -193,7 +213,7 @@ export default function BillingsPage() {
                                     </td>
                                 </tr>
                             ))}
-                            {billings.length === 0 && (
+                            {(!Array.isArray(billings) || billings.length === 0) && (
                                 <tr>
                                     <td colSpan="6" style={{ textAlign: "center", color: "var(--text-light)", padding: "32px" }}>Belum ada data tagihan.</td>
                                 </tr>

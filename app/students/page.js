@@ -17,9 +17,15 @@ export default function StudentsPage() {
         try {
             const res = await fetch("/api/students");
             const data = await res.json();
-            setStudents(data);
+            if (Array.isArray(data)) {
+                setStudents(data);
+            } else {
+                console.error("Data is not an array:", data);
+                setStudents([]);
+            }
         } catch (e) {
             console.error(e);
+            setStudents([]);
         }
     };
 
@@ -130,7 +136,7 @@ export default function StudentsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {students.map((student) => (
+                            {Array.isArray(students) && students.map((student) => (
                                 <tr key={student._id}>
                                     <td style={{ fontWeight: 500 }}>{student.name}</td>
                                     <td>{student.contact}</td>
@@ -148,7 +154,7 @@ export default function StudentsPage() {
                                     </td>
                                 </tr>
                             ))}
-                            {students.length === 0 && (
+                            {(!Array.isArray(students) || students.length === 0) && (
                                 <tr>
                                     <td colSpan="5" style={{ textAlign: "center", color: "var(--text-light)", padding: "32px" }}>Belum ada data siswa.</td>
                                 </tr>
