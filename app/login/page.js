@@ -67,11 +67,10 @@ export default function LoginPage() {
                 zIndex: 1,
             }}>
                 {/* Logo/Brand */}
-                <div style={{ textAlign: "center", marginBottom: "32px" }}>
                     <div style={{
                         width: "56px", height: "56px",
                         background: "linear-gradient(135deg, #6366f1, #4338ca)",
-                        borderRadius: "16px",
+                        borderRadius: "50%",
                         display: "inline-flex",
                         alignItems: "center",
                         justifyContent: "center",
