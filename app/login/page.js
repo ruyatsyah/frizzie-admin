@@ -85,7 +85,6 @@ export default function LoginPage() {
                         FrizzieSmartClub
                     </h1>
                     <p style={{ color: "#64748b", fontSize: "14px" }}>Admin Panel — Masuk untuk melanjutkan</p>
-                </div>
 
                 <form onSubmit={handleLogin}>
                     {/* Email Field */}
