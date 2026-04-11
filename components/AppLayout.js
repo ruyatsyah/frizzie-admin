@@ -51,10 +51,14 @@ export default function AppLayout({ children }) {
     return (
         <div className="app-layout">
             <Toast />
-            {isSidebarOpen && (
-                <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-            )}
-            <main className="main-content">
+            <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+            <main className="main-content" style={{ 
+                flex: 1, 
+                backgroundColor: '#F8FAFC', 
+                height: '100vh', 
+                overflowY: 'auto',
+                position: 'relative'
+            }}>
                 <Topbar
                     onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
                     onLogout={() => {
@@ -62,7 +66,16 @@ export default function AppLayout({ children }) {
                         router.push("/login");
                     }}
                 />
-                <div className="page-content">{children}</div>
+                
+                {/* Content Container with Large Screen Responsiveness */}
+                <div style={{ 
+                    maxWidth: '1600px', 
+                    margin: '0 auto', 
+                    padding: '24px',
+                    width: '100%'
+                }}>
+                    {children}
+                </div>
             </main>
         </div>
     );

@@ -5,97 +5,57 @@ import ConfirmModal from "@/components/ConfirmModal";
 
 export default function SalariesPage() {
     const [salaries, setSalaries] = useState([]);
-    const [teachers, setTeachers] = useState([]);
-    const [formData, setFormData] = useState({ teacher: "", amount: "", monthYear: "", sessions: 0, status: "Belum Dibayar" });
-    const [editingId, setEditingId] = useState(null);
+    const [loading, setLoading] = useState(false);
     const [printData, setPrintData] = useState(null);
-    const [deleteId, setDeleteId] = useState(null);
+    const [toggleData, setToggleData] = useState(null); // For status toggle confirmation
 
     useEffect(() => {
         fetchSalaries();
-        fetchTeachers();
     }, []);
 
     const fetchSalaries = async () => {
+        setLoading(true);
         try {
             const res = await fetch("/api/salaries");
             const data = await res.json();
             if (Array.isArray(data)) {
                 setSalaries(data);
             } else {
-                console.error("Data is not an array:", data);
                 setSalaries([]);
             }
         } catch (e) {
             console.error(e);
             setSalaries([]);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const fetchTeachers = async () => {
+    const toggleStatus = (salary) => {
+        setToggleData(salary);
+    };
+
+    const confirmToggle = async () => {
+        if (!toggleData) return;
         try {
-            const res = await fetch("/api/teachers");
-            const data = await res.json();
-            if (Array.isArray(data)) {
-                setTeachers(data);
-            } else {
-                console.error("Data is not an array:", data);
-                setTeachers([]);
-            }
-        } catch (e) {
-            console.error(e);
-            setTeachers([]);
-        }
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (editingId) {
-            await fetch(`/api/salaries/${editingId}`, {
+            const newStatus = toggleData.status === "Sudah Dibayar" ? "Belum Dibayar" : "Sudah Dibayar";
+            const res = await fetch(`/api/salaries/${toggleData._id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({ status: newStatus }),
             });
-            showToast("Data berhasil disimpan di edit!");
-            setEditingId(null);
-        } else {
-            await fetch("/api/salaries", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
-            showToast("Success, gaji tersimpan!");
+
+            if (res.ok) {
+                showToast(`Status gaji berhasil diubah ke ${newStatus}`);
+                fetchSalaries();
+            } else {
+                showToast("Gagal mengubah status", "error");
+            }
+        } catch (e) {
+            showToast("Terjadi kesalahan", "error");
+        } finally {
+            setToggleData(null);
         }
-        setFormData({ teacher: "", amount: "", monthYear: "", sessions: 0, status: "Belum Dibayar" });
-        fetchSalaries();
-    };
-
-    const handleEdit = (salary) => {
-        setEditingId(salary._id);
-        setFormData({
-            teacher: salary.teacher?._id || "",
-            amount: salary.amount,
-            sessions: salary.sessions || 0,
-            monthYear: salary.monthYear,
-            status: salary.status,
-        });
-    };
-
-    const handleDelete = (id) => {
-        setDeleteId(id);
-    };
-
-    const confirmDelete = async () => {
-        if (!deleteId) return;
-        await fetch(`/api/salaries/${deleteId}`, { method: "DELETE" });
-        showToast("Data berhasil dihapus!");
-        setDeleteId(null);
-        fetchSalaries();
-    };
-
-    const cancelEdit = () => {
-        setEditingId(null);
-        setFormData({ teacher: "", amount: "", monthYear: "", sessions: 0, status: "Belum Dibayar" });
     };
 
     const handlePrint = (salary) => {
@@ -107,117 +67,77 @@ export default function SalariesPage() {
 
     return (
         <div>
-            <h1 className="page-title">Manajemen Gaji Guru</h1>
-
-            <div className="card no-print" style={{ marginBottom: "24px" }}>
-                <h3>{editingId ? "Edit Gaji" : "Catat Gaji Baru"}</h3>
-                <form onSubmit={handleSubmit} style={{ display: "flex", gap: "16px", marginTop: "16px", flexWrap: "wrap", alignItems: "center" }}>
-                    <select
-                        value={formData.teacher}
-                        onChange={(e) => setFormData({ ...formData, teacher: e.target.value })}
-                        required
-                        style={{ flex: 1, minWidth: "200px" }}
-                    >
-                        <option value="">Pilih Guru</option>
-                        {Array.isArray(teachers) && teachers.map((t) => (
-                            <option key={t._id} value={t._id}>{t.name}</option>
-                        ))}
-                    </select>
-                    <input
-                        type="number"
-                        placeholder="Jml Mengajar"
-                        value={formData.sessions}
-                        onChange={(e) => setFormData({ ...formData, sessions: e.target.value })}
-                        required
-                        style={{ width: "130px" }}
-                    />
-                    <input
-                        type="number"
-                        placeholder="Nominal Gaji (Rp)"
-                        value={formData.amount}
-                        onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                        required
-                        style={{ flex: 1, minWidth: "150px" }}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Bulan & Tahun (Cth: Januari 2026)"
-                        value={formData.monthYear}
-                        onChange={(e) => setFormData({ ...formData, monthYear: e.target.value })}
-                        required
-                        style={{ flex: 1, minWidth: "180px" }}
-                    />
-                    <select
-                        value={formData.status}
-                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                        style={{ flex: 1, minWidth: "150px" }}
-                    >
-                        <option value="Belum Dibayar">Belum Dibayar</option>
-                        <option value="Sudah Dibayar">Sudah Dibayar</option>
-                    </select>
-                    <div style={{ display: "flex", gap: "8px" }}>
-                        <button type="submit" className="btn-primary" style={{ whiteSpace: "nowrap" }}>
-                            {editingId ? "Update Data" : "Simpan Data"}
-                        </button>
-                        {editingId && (
-                            <button type="button" className="btn-outline" onClick={cancelEdit}>
-                                Batal
-                            </button>
-                        )}
-                    </div>
-                </form>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h1 className="page-title" style={{ margin: 0 }}>Laporan Gaji Guru</h1>
+                <div style={{ fontSize: '13px', color: 'var(--text-light)', backgroundColor: '#F0F0FF', padding: '8px 16px', borderRadius: '8px', color: '#5A57DA', fontWeight: 600 }}>
+                    Sistem Gaji Otomatis via Absensi
+                </div>
             </div>
 
             <div className="card no-print">
+                <div style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #F1F5F9' }}>
+                    <p style={{ fontSize: '14px', color: 'var(--text-light)', margin: 0 }}>
+                        Data gaji di bawah ini dihitung otomatis berdasarkan jumlah kehadiran murid (Rp 10.000/murid). 
+                        Anda tidak dapat menambah atau mengubah gaji secara manual dari sini.
+                    </p>
+                </div>
+
                 <div className="table-wrapper">
                     <table className="data-table">
                         <thead>
                             <tr>
                                 <th>Nama Guru</th>
                                 <th>Bulan/Tahun</th>
-                                <th>Kehadiran</th>
-                                <th>Nominal</th>
+                                <th>Total Kehadiran</th>
+                                <th>Total Honor</th>
                                 <th>Status</th>
-                                <th style={{ textAlign: "right" }}>Aksi</th>
+                                <th style={{ textAlign: "right" }}>Arsip</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {Array.isArray(salaries) && salaries.map((salary) => (
+                            {loading ? (
+                                <tr><td colSpan="6" style={{ textAlign: "center", padding: "32px" }}>Memuat data...</td></tr>
+                            ) : salaries.length === 0 ? (
+                                <tr><td colSpan="6" style={{ textAlign: "center", color: "var(--text-light)", padding: "32px" }}>Belum ada data gaji yang tercatat dari absensi.</td></tr>
+                            ) : salaries.map((salary) => (
                                 <tr key={salary._id}>
-                                    <td style={{ fontWeight: 500 }}>{salary.teacher?.name || "Guru Dihapus"}</td>
+                                    <td style={{ fontWeight: 600 }}>{salary.teacher?.name || "Guru Dihapus"}</td>
                                     <td>{salary.monthYear}</td>
-                                    <td>{salary.sessions || 0} <span style={{ color: "var(--text-light)", fontSize: "11px" }}>Sesi</span></td>
-                                    <td style={{ fontWeight: 600 }}>Rp {salary.amount.toLocaleString("id-ID")}</td>
                                     <td>
-                                        <span className="status-tag" style={{
-                                            backgroundColor: salary.status === 'Sudah Dibayar' ? 'var(--success)' : 'var(--danger)',
-                                            color: 'white',
-                                            padding: "4px 10px",
-                                            borderRadius: "6px"
-                                        }}>
-                                            {salary.status}
-                                        </span>
-                                    </td>
-                                    <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                                        <div style={{ display: "flex", gap: "4px", justifyContent: "flex-end" }}>
-                                            <button onClick={() => handlePrint(salary)} className="btn-outline" style={{ fontSize: "11px", padding: "4px 8px" }}>
-                                                🖨️ Cetak
-                                            </button>
-                                            <button onClick={() => handleEdit(salary)} className="btn-outline" style={{ fontSize: "11px", padding: "4px 8px" }}>
-                                                ✏️ Edit
-                                            </button>
-                                            <button onClick={() => handleDelete(salary._id)} className="btn-danger" style={{ fontSize: "11px", padding: "4px 8px" }}>
-                                                🗑️ Hapus
-                                            </button>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <span style={{ fontWeight: 700 }}>{salary.sessions || 0}</span>
+                                            <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>Murid Hadir</span>
                                         </div>
+                                    </td>
+                                    <td style={{ fontWeight: 700, color: '#5A57DA' }}>Rp {salary.amount.toLocaleString("id-ID")}</td>
+                                    <td>
+                                        <button 
+                                            onClick={() => toggleStatus(salary)}
+                                            style={{
+                                                backgroundColor: salary.status === 'Sudah Dibayar' ? '#ecfdf5' : '#fef2f2',
+                                                color: salary.status === 'Sudah Dibayar' ? '#059669' : '#dc2626',
+                                                padding: "6px 14px",
+                                                borderRadius: "8px",
+                                                fontSize: "11px",
+                                                fontWeight: 700,
+                                                border: `1px solid ${salary.status === 'Sudah Dibayar' ? '#10b981' : '#f87171'}`,
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px'
+                                            }}
+                                            title="Klik untuk ubah status"
+                                        >
+                                            {salary.status === 'Sudah Dibayar' ? '✅ Sudah Dibayar' : '⏳ Belum Dibayar'}
+                                        </button>
+                                    </td>
+                                    <td style={{ textAlign: "right" }}>
+                                        <button onClick={() => handlePrint(salary)} className="btn-outline" style={{ fontSize: "11px", padding: "6px 12px", borderColor: '#5A57DA', color: '#5A57DA' }}>
+                                            🖨️ Cetak Slip
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
-                            {(!Array.isArray(salaries) || salaries.length === 0) && (
-                                <tr>
-                                    <td colSpan="6" style={{ textAlign: "center", color: "var(--text-light)", padding: "32px" }}>Belum ada data gaji.</td>
-                                </tr>
-                            )}
                         </tbody>
                     </table>
                 </div>
@@ -229,80 +149,57 @@ export default function SalariesPage() {
                     padding: "40px",
                     maxWidth: "640px",
                     margin: "0 auto",
-                    left: 0,
-                    right: 0,
                     backgroundColor: "white",
-                    color: "#333",
-                    fontFamily: "Inter, sans-serif",
-                    boxShadow: "0 0 0 1px rgba(0,0,0,0.05)" /* Subtle print bounding */
+                    color: "#111",
+                    fontFamily: "'Inter', sans-serif",
                 }}>
-                    <div style={{ textAlign: "center", borderBottom: "4px solid var(--success)", paddingBottom: "24px", marginBottom: "32px" }}>
-                        <h1 style={{ fontSize: "32px", color: "var(--success)", marginBottom: "4px", fontWeight: 800, letterSpacing: "-0.05em" }}>FrizzieSmartClub</h1>
-                        <p style={{ fontSize: "14px", color: "#6B7280", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600 }}>Struk Pembayaran Gaji / Honor</p>
+                    <div style={{ textAlign: "center", borderBottom: "3px solid #5A57DA", paddingBottom: "20px", marginBottom: "30px" }}>
+                        <h1 style={{ fontSize: "28px", color: "#5A57DA", marginBottom: "4px", fontWeight: 800 }}>FrizzieSmartClub</h1>
+                        <p style={{ fontSize: "12px", color: "#666", textTransform: "uppercase", letterSpacing: "2px" }}>Slip Honorarium Pengajar</p>
                     </div>
 
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "32px", padding: "20px", backgroundColor: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: "8px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "30px", padding: "15px", background: "#f8fafc", borderRadius: "8px" }}>
                         <div>
-                            <p style={{ fontSize: "11px", color: "#6B7280", marginBottom: "6px", letterSpacing: "0.05em", fontWeight: 600 }}>DITERBITKAN OLEH</p>
-                            <p style={{ fontWeight: 700, color: "#111827", fontSize: "15px" }}>Admin Ruyatsyah</p>
-                            <p style={{ fontSize: "13px", color: "#4B5563" }}>KP. Bojong RT.02/RW01</p>
+                            <p style={{ fontSize: "10px", color: "#888", marginBottom: "4px", fontWeight: 700 }}>DETAIL PENERIMA</p>
+                            <p style={{ fontWeight: 700, fontSize: "16px" }}>{printData.teacher?.name}</p>
+                            <p style={{ fontSize: "13px" }}>ID Guru: {printData.teacher?._id?.slice(-6).toUpperCase()}</p>
                         </div>
                         <div style={{ textAlign: "right" }}>
-                            <p style={{ fontSize: "11px", color: "#6B7280", marginBottom: "6px", letterSpacing: "0.05em", fontWeight: 600 }}>TANGGAL CETAK / STATUS</p>
-                            <p style={{ fontWeight: 600, color: "#111827", marginBottom: "6px", fontSize: "14px" }}>{new Date().toLocaleDateString("id-ID")}</p>
-                            <span style={{
-                                display: "inline-block",
-                                padding: "4px 12px",
-                                borderRadius: "4px",
-                                fontSize: "11px",
-                                fontWeight: 700,
-                                backgroundColor: printData.status === 'Sudah Dibayar' ? '#10B981' : '#EF4444',
-                                color: 'white',
-                                letterSpacing: "0.05em"
-                            }}>
-                                {printData.status.toUpperCase()}
-                            </span>
+                            <p style={{ fontSize: "10px", color: "#888", marginBottom: "4px", fontWeight: 700 }}>PERIODE / STATUS</p>
+                            <p style={{ fontWeight: 700 }}>{printData.monthYear}</p>
+                            <p style={{ fontSize: "12px", color: printData.status === 'Sudah Dibayar' ? '#059669' : '#dc2626', fontWeight: 700 }}>{printData.status.toUpperCase()}</p>
                         </div>
                     </div>
 
-                    <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "40px" }}>
-                        <thead>
-                            <tr>
-                                <th style={{ padding: "12px", textAlign: "left", color: "#6B7280", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "2px solid #E5E7EB" }}>Deskripsi / Pengajar</th>
-                                <th style={{ padding: "12px", textAlign: "right", color: "#6B7280", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "2px solid #E5E7EB" }}>Nominal Pembayaran</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style={{ padding: "16px 12px", borderBottom: "1px solid #E5E7EB", color: "#111827", fontWeight: 500 }}>
-                                    Honor Pengajar - <span style={{ fontWeight: 600 }}>{printData.teacher?.name}</span> <br />
-                                    <span style={{ fontSize: "13px", color: "#6B7280", fontWeight: 400 }}>Periode: {printData.monthYear} | Total Mengajar: {printData.sessions} Sesi</span>
-                                </td>
-                                <td style={{ padding: "16px 12px", borderBottom: "1px solid #E5E7EB", textAlign: "right", color: "#111827", fontWeight: 600, fontSize: "16px" }}>
-                                    Rp {printData.amount.toLocaleString("id-ID")}
-                                </td>
-                            </tr>
-                            <tr style={{ backgroundColor: "#F9FAFB" }}>
-                                <td style={{ padding: "16px 12px", textAlign: "right", color: "#6B7280", fontWeight: 600, fontSize: "13px" }}>TOTAL DIBAYARKAN:</td>
-                                <td style={{ padding: "16px 12px", textAlign: "right", color: "var(--success)", fontWeight: 800, fontSize: "18px" }}>
-                                    Rp {printData.amount.toLocaleString("id-ID")}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div style={{ marginBottom: "40px" }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #eee' }}>
+                            <span style={{ color: '#555' }}>Total Kehadiran Murid</span>
+                            <span style={{ fontWeight: 600 }}>{printData.sessions} Kali</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #eee' }}>
+                            <span style={{ color: '#555' }}>Rate per Murid</span>
+                            <span style={{ fontWeight: 600 }}>Rp 10.000</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '20px 0', borderBottom: '2px solid #5A57DA' }}>
+                            <span style={{ fontWeight: 700, fontSize: '16px' }}>TOTAL HONOR</span>
+                            <span style={{ fontWeight: 800, fontSize: '20px', color: '#5A57DA' }}>Rp {printData.amount.toLocaleString("id-ID")}</span>
+                        </div>
+                    </div>
 
-                    <div style={{ textAlign: "center", marginTop: "48px", color: "#6B7280", fontSize: "13px", borderTop: "1px dashed #E5E7EB", paddingTop: "24px" }}>
-                        <p style={{ fontWeight: 500, color: "#374151", marginBottom: "4px" }}>Terima kasih atas dedikasi Anda di FrizzieSmartClub.</p>
-                        <p style={{ fontSize: "12px" }}>Struk ini adalah bukti pencairan honor digital yang sah.</p>
+                    <div style={{ textAlign: "center", marginTop: "50px", borderTop: "1px dashed #ccc", paddingTop: "20px" }}>
+                        <p style={{ fontSize: "12px", color: "#777" }}>Dicetak otomatis oleh Sistem FrizzieSmart pada {new Date().toLocaleString("id-ID")}</p>
                     </div>
                 </div>
             )}
-            {deleteId && (
+
+            {toggleData && (
                 <ConfirmModal
-                    title="Hapus Gaji"
-                    message="Apakah Anda yakin ingin menghapus data gaji ini?"
-                    onConfirm={confirmDelete}
-                    onCancel={() => setDeleteId(null)}
+                    title="Ubah Status Pembayaran"
+                    message={`Apakah Anda yakin ingin mengubah status gaji menjadi ${toggleData.status === 'Sudah Dibayar' ? 'Belum Dibayar' : 'Sudah Dibayar'}?`}
+                    onConfirm={confirmToggle}
+                    onCancel={() => setToggleData(null)}
+                    confirmText="Ubah Status"
+                    variant="primary"
                 />
             )}
         </div>

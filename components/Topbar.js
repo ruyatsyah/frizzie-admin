@@ -5,25 +5,15 @@ export default function Topbar({ onMenuClick, onLogout }) {
     const [showDropdown, setShowDropdown] = useState(false);
 
     return (
-        <header className="topbar" style={{ boxShadow: 'var(--shadow-sm)', borderBottom: '1px solid var(--border)', position: 'relative', zIndex: 50 }}>
+        <header className="topbar" style={{ boxShadow: 'var(--shadow-sm)', borderBottom: '1px solid var(--border)', position: 'relative', zIndex: 50, justifyContent: 'space-between', padding: '0 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <button
-                    onClick={onMenuClick}
-                    className="btn-outline"
-                    style={{
-                        padding: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        borderRadius: '10px',
-                        border: '1px solid var(--border)'
-                    }}
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="18" x2="20" y2="18" />
-                    </svg>
-                </button>
-                <span style={{ fontWeight: 600, fontSize: '16px', color: 'var(--text-dark)' }}>
-                    Admin Dashboard
+                <span style={{ 
+                    color: '#5A57DA', 
+                    fontSize: '20px', 
+                    fontWeight: 800, 
+                    letterSpacing: '-0.03em'
+                }}>
+                    FrizzieSmart
                 </span>
             </div>
 
@@ -59,7 +49,6 @@ export default function Topbar({ onMenuClick, onLogout }) {
                     </div>
                     <div style={{ textAlign: 'left' }}>
                         <p style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-dark)', lineHeight: 1.2 }}>Ruyatsyah</p>
-                        <p style={{ color: 'var(--text-light)', fontSize: '11px', lineHeight: 1.2 }}>KP. Bojong</p>
                     </div>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-light)', transition: 'transform 0.2s', transform: showDropdown ? 'rotate(180deg)' : 'rotate(0)' }}>
                         <polyline points="6 9 12 15 18 9" />
