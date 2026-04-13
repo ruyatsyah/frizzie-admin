@@ -9,13 +9,18 @@ export default function AppLayout({ children }) {
     const router = useRouter();
     const pathname = usePathname();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [user, setUser] = useState(null);
     const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {
-        const auth = localStorage.getItem("frizzie_auth");
-        if (auth === "authenticated") {
-            setIsAuthenticated(true);
+        const authData = localStorage.getItem("frizzie_auth");
+        if (authData) {
+            try {
+                const parsedUser = JSON.parse(authData);
+                setUser(parsedUser);
+            } catch (e) {
+                if (pathname !== "/login") router.replace("/login");
+            }
         } else if (pathname !== "/login") {
             router.replace("/login");
         }
@@ -44,22 +49,25 @@ export default function AppLayout({ children }) {
     }
 
     // Not authenticated and not on login page - redirect handled above
-    if (!isAuthenticated) {
+    if (!user && pathname !== "/login") {
         return null;
     }
 
     return (
         <div className="app-layout">
             <Toast />
-            <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+            <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} userRole={user?.role} />
             <main className="main-content" style={{ 
                 flex: 1, 
                 backgroundColor: '#F8FAFC', 
                 height: '100vh', 
                 overflowY: 'auto',
-                position: 'relative'
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column'
             }}>
                 <Topbar
+                    user={user}
                     onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
                     onLogout={() => {
                         localStorage.removeItem("frizzie_auth");
@@ -67,15 +75,29 @@ export default function AppLayout({ children }) {
                     }}
                 />
                 
-                {/* Content Container with Large Screen Responsiveness */}
                 <div style={{ 
                     maxWidth: '1600px', 
                     margin: '0 auto', 
-                    padding: '24px',
-                    width: '100%'
+                    padding: '32px 24px', 
+                    width: '100%',
+                    flex: 1 // Content takes available space
                 }}>
                     {children}
                 </div>
+
+                {/* Perfectly Balanced Footer */}
+                <footer style={{ 
+                    padding: '32px 24px 24px', 
+                    borderTop: '1px solid #e2e8f0',
+                    textAlign: 'center',
+                    color: '#94a3b8',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    letterSpacing: '0.025em',
+                    width: '100%'
+                }}>
+                    © 2025 FrizzieSmartClub. Create with ❤️ ruyatsyah
+                </footer>
             </main>
         </div>
     );

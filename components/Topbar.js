@@ -1,11 +1,11 @@
 "use client";
 import { useState } from "react";
 
-export default function Topbar({ onMenuClick, onLogout }) {
+export default function Topbar({ onMenuClick, onLogout, user }) {
     const [showDropdown, setShowDropdown] = useState(false);
 
     return (
-        <header className="topbar" style={{ boxShadow: 'var(--shadow-sm)', borderBottom: '1px solid var(--border)', position: 'relative', zIndex: 50, justifyContent: 'space-between', padding: '0 24px' }}>
+        <header className="topbar" style={{ boxShadow: 'var(--shadow-sm)', borderBottom: '1px solid var(--border)', position: 'relative', zIndex: 50, justifyContent: 'space-between', padding: '4px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <span style={{ 
                     color: '#5A57DA', 
@@ -45,10 +45,10 @@ export default function Topbar({ onMenuClick, onLogout }) {
                         fontWeight: 700,
                         fontSize: '13px'
                     }}>
-                        R
+                        {user?.name?.charAt(0) || "U"}
                     </div>
                     <div style={{ textAlign: 'left' }}>
-                        <p style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-dark)', lineHeight: 1.2 }}>Ruyatsyah</p>
+                        <p style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-dark)', lineHeight: 1.2 }}>{user?.name || "User"}</p>
                     </div>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-light)', transition: 'transform 0.2s', transform: showDropdown ? 'rotate(180deg)' : 'rotate(0)' }}>
                         <polyline points="6 9 12 15 18 9" />
@@ -76,8 +76,8 @@ export default function Topbar({ onMenuClick, onLogout }) {
                             overflow: 'hidden',
                         }}>
                             <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
-                                <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-dark)' }}>Ruyatsyah</p>
-                                <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>ruyatsyah2203@gmail.com</p>
+                                <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-dark)' }}>{user?.name || "User"}</p>
+                                <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>{user?.email}</p>
                             </div>
                             <button
                                 onClick={() => {

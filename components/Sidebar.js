@@ -10,7 +10,7 @@ import { useState, useEffect } from "react";
  * - Expanded: 260px width, icons + labels.
  * - Logic: Expansion ONLY on Hamburger or Absensi click.
  */
-export default function Sidebar({ isOpen, setIsOpen }) {
+export default function Sidebar({ isOpen, setIsOpen, userRole }) {
     const pathname = usePathname();
     const router = useRouter();
     const [attendanceOpen, setAttendanceOpen] = useState(pathname.startsWith("/attendance"));
@@ -25,11 +25,12 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         {
             title: "MANAJEMEN",
             items: [
-                { name: "Data Siswa", path: "/students", icon: <IconStudents /> },
-                { name: "Data Guru", path: "/teachers", icon: <IconTeachers /> }
-            ]
+                userRole === "admin" && { name: "Data Siswa", path: "/students", icon: <IconStudents /> },
+                userRole === "admin" && { name: "Data Guru", path: "/teachers", icon: <IconTeachers /> },
+                { name: "Capaian Belajar", path: "/learning-outcomes", icon: <IconCP /> }
+            ].filter(Boolean)
         },
-        {
+        userRole === "admin" && {
             title: "LAPORAN",
             items: [
                 {
@@ -42,16 +43,19 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                         { name: "Rekap Absen Guru", path: "/attendance/rekap-guru" },
                         { name: "Rekap Absen Murid", path: "/attendance/rekap-murid" },
                     ]
-                }
+                },
+                { name: "Hasil Evaluasi Belajar", path: "/reports/learning-evaluations", icon: <IconEvaluasi /> }
             ]
         },
-        {
-            title: "KEUANGAN",
-            items: [
-                { name: "Tagihan Siswa", path: "/billings", icon: <IconBilling /> },
-                { name: "Gaji Guru", path: "/salaries", icon: <IconSalary /> }
-            ]
-        }
+        ...(userRole === "admin" ? [
+            {
+                title: "KEUANGAN",
+                items: [
+                    { name: "Tagihan Siswa", path: "/billings", icon: <IconBilling /> },
+                    { name: "Gaji Guru", path: "/salaries", icon: <IconSalary /> }
+                ]
+            }
+        ] : [])
     ];
 
     const isActive = (path) => pathname === path;
@@ -123,7 +127,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
             {/* Navigation Body */}
             <nav className="sidebar-nav" style={{ padding: '24px 0', flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-                {menuGroups.map((group) => (
+                {menuGroups.filter(Boolean).map((group) => (
                     <div key={group.title} style={{ marginBottom: '24px' }}>
                         <div style={{ 
                             fontSize: '10px', 
@@ -282,9 +286,15 @@ const IconTeachers = () => (
 const IconAttendance = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a4 4 0 0 0-4-4H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a4 4 0 0 1 4-4h6z"/></svg>
 );
+const IconCP = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+);
 const IconBilling = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
 );
 const IconSalary = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="m9 13 3 3 3-3"/></svg>
+);
+const IconEvaluasi = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
 );

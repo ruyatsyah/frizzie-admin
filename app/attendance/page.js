@@ -23,11 +23,20 @@ export default function AttendancePage() {
         notes: ""
     });
     
+    const [user, setUser] = useState(null);
     const [attendanceList, setAttendanceList] = useState([]);
     const [deleteId, setDeleteId] = useState(null);
     const [editingId, setEditingId] = useState(null);
 
     useEffect(() => {
+        const authData = localStorage.getItem("frizzie_auth");
+        if (authData) {
+            const parsedUser = JSON.parse(authData);
+            setUser(parsedUser);
+            if (parsedUser.role === 'teacher') {
+                setFormData(prev => ({ ...prev, teacher: parsedUser.teacherId }));
+            }
+        }
         fetchInitialData();
         fetchAttendance();
     }, []);
@@ -213,11 +222,11 @@ export default function AttendancePage() {
                                     </td>
                                     <td style={{ textAlign: "right" }}>
                                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                                            <button onClick={() => handleEdit(item)} className="btn-outline" style={{ fontSize: "11px", padding: "6px 10px", borderColor: '#5A57DA', color: '#5A57DA' }}>
-                                                ✏️ Edit
+                                            <button onClick={() => handleEdit(item)} className="btn-action" style={{ color: '#F59E0B' }} title="Edit">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
                                             </button>
-                                            <button onClick={() => handleDelete(item._id)} className="btn-danger" style={{ fontSize: "11px", padding: "6px 10px" }}>
-                                                🗑️
+                                            <button onClick={() => handleDelete(item._id)} className="btn-action" style={{ color: '#EF4444' }} title="Hapus">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                                             </button>
                                         </div>
                                     </td>
@@ -238,15 +247,24 @@ export default function AttendancePage() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                         <div>
                             <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Pilih Guru</label>
-                            <select 
-                                value={formData.teacher}
-                                onChange={(e) => setFormData({ ...formData, teacher: e.target.value })}
-                                required
-                                style={{ height: '42px' }}
-                            >
-                                <option value="">-- Pilih Guru --</option>
-                                {teachers.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
-                            </select>
+                            {user?.role === 'teacher' ? (
+                                <input 
+                                    type="text" 
+                                    value={user.name} 
+                                    readOnly 
+                                    style={{ height: '42px', backgroundColor: '#F1F5F9', cursor: 'not-allowed' }} 
+                                />
+                            ) : (
+                                <select 
+                                    value={formData.teacher}
+                                    onChange={(e) => setFormData({ ...formData, teacher: e.target.value })}
+                                    required
+                                    style={{ height: '42px' }}
+                                >
+                                    <option value="">-- Pilih Guru --</option>
+                                    {teachers.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+                                </select>
+                            )}
                         </div>
                         <div>
                             <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Tanggal Sesi</label>

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 
 export default function Dashboard() {
+  const [user, setUser] = useState(null);
   const [stats, setStats] = useState({
     students: 0,
     teachers: 0,
@@ -10,6 +11,11 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
+    const authData = localStorage.getItem("frizzie_auth");
+    if (authData) {
+      setUser(JSON.parse(authData));
+    }
+
     async function fetchStats() {
       try {
         const res = await fetch("/api/dashboard");
@@ -24,6 +30,12 @@ export default function Dashboard() {
     fetchStats();
   }, []);
 
+  if (!user) return null;
+
+  if (user.role === "teacher") {
+      return <TeacherDashboard user={user} />;
+  }
+
   return (
     <div className="dashboard-container">
       {/* Welcome Banner */}
@@ -37,7 +49,7 @@ export default function Dashboard() {
         overflow: 'hidden'
       }}>
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <h1 style={{ color: 'white', fontSize: '24px', marginBottom: '8px' }}>Selamat Datang, Ruyatsyah 👋</h1>
+          <h1 style={{ color: 'white', fontSize: '24px', marginBottom: '8px' }}>Selamat Datang, {user.name} 👋</h1>
           <p style={{ opacity: 0.9, fontSize: '15px', maxWidth: '600px' }}>
             Pantau ringkasan keuangan dan manajemen operasional FrizzieSmartClub secara real-time dari satu tempat.
           </p>
@@ -163,4 +175,157 @@ export default function Dashboard() {
       </div>
     </div>
   );
+}
+
+function TeacherDashboard({ user }) {
+    const [stats, setStats] = useState({ cpCount: 0, sessionsThisMonth: 0 });
+    const [recentCP, setRecentCP] = useState([]);
+    const [salaries, setSalaries] = useState([]);
+
+    useEffect(() => {
+        async function fetchTeacherData() {
+            try {
+                const res = await fetch(`/api/teacher/dashboard?teacherId=${user.teacherId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setStats(data.stats);
+                    setRecentCP(data.recentCP);
+                    setSalaries(data.salaries || []);
+                }
+            } catch (e) {
+                console.error("Failed to fetch teacher dashboard data", e);
+            }
+        }
+        if (user.teacherId) fetchTeacherData();
+    }, [user.teacherId]);
+
+    return (
+        <div className="dashboard-container teacher-dashboard">
+            <style jsx>{`
+                .teacher-dashboard {
+                    padding: 20px;
+                    max-width: 1200px;
+                    margin: 0 auto;
+                }
+                .teacher-banner {
+                    margin-bottom: 24px;
+                    background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+                    border-radius: 16px;
+                    padding: 32px;
+                    color: white;
+                    position: relative;
+                    overflow: hidden;
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                }
+                .teacher-stats-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 16px;
+                    margin-bottom: 24px;
+                }
+                .teacher-main-grid {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                    gap: 24px;
+                }
+                
+                @media (max-width: 768px) {
+                    .teacher-dashboard {
+                        padding: 12px;
+                    }
+                    .teacher-banner {
+                        padding: 24px 20px;
+                    }
+                    .teacher-stats-grid {
+                        grid-template-columns: 1fr;
+                        gap: 12px;
+                    }
+                    .teacher-main-grid {
+                        grid-template-columns: 1fr;
+                        gap: 16px;
+                    }
+                    .teacher-banner h1 {
+                        font-size: 1.25rem !important;
+                    }
+                }
+            `}</style>
+            
+            <div className="teacher-banner">
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                    <h1 style={{ color: 'white', fontSize: '24px', marginBottom: '8px' }}>Halo, Guru {user.name} 👋</h1>
+                    <p style={{ opacity: 0.9, fontSize: '15px' }}>
+                        Terima kasih atas dedikasi Anda. Berikut ringkasan capaian murid dan riwayat gaji Anda.
+                    </p>
+                </div>
+                {/* Decorative circle */}
+                <div style={{
+                    position: 'absolute',
+                    top: '-30px',
+                    right: '-30px',
+                    width: '150px',
+                    height: '150px',
+                    background: 'rgba(255,255,255,0.1)',
+                    borderRadius: '50%'
+                }} />
+            </div>
+
+            <div className="teacher-stats-grid">
+                <div className="card" style={{ border: 'none', background: 'white', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ position: 'relative', zIndex: 1 }}>
+                        <p style={{ color: 'var(--text-light)', fontSize: '11px', fontWeight: 600, marginBottom: '4px', letterSpacing: '0.05em' }}>CAPAIAN PEMBELAJARAN (CP)</p>
+                        <p style={{ fontSize: '32px', fontWeight: 800, color: 'var(--primary)' }}>{stats.cpCount}</p>
+                        <p style={{ fontSize: '12px', color: 'var(--text-light)', marginTop: '4px' }}>Total evaluasi tersimpan</p>
+                    </div>
+                    <div style={{ position: 'absolute', bottom: '-10px', right: '-10px', opacity: 0.1, color: 'var(--primary)' }}>
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                    </div>
+                </div>
+                <div className="card" style={{ border: 'none', background: 'white', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ position: 'relative', zIndex: 1 }}>
+                        <p style={{ color: 'var(--text-light)', fontSize: '11px', fontWeight: 600, marginBottom: '4px', letterSpacing: '0.05em' }}>SESI BULAN INI</p>
+                        <p style={{ fontSize: '32px', fontWeight: 800, color: 'var(--success)' }}>{stats.sessionsThisMonth}</p>
+                        <p style={{ fontSize: '12px', color: 'var(--text-light)', marginTop: '4px' }}>Total kehadiran mengajar</p>
+                    </div>
+                    <div style={{ position: 'absolute', bottom: '-10px', right: '-10px', opacity: 0.1, color: 'var(--success)' }}>
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div className="teacher-main-grid">
+
+
+                <div className="card">
+                    <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Riwayat Gaji Terakhir</h3>
+                    {salaries.length === 0 ? (
+                        <p style={{ color: 'var(--text-light)', fontSize: '14px' }}>Belum ada riwayat gaji.</p>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {salaries.slice(0, 5).map((s, i) => (
+                                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderBottom: '1px solid #f1f5f9', gap: '12px' }}>
+                                    <div>
+                                        <p style={{ fontWeight: 600, fontSize: '13px' }}>{s.monthYear}</p>
+                                        <p style={{ fontSize: '11px', color: 'var(--text-light)' }}>{s.sessions} Sesi</p>
+                                    </div>
+                                    <div style={{ textAlign: 'right' }}>
+                                        <p style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-dark)' }}>Rp {s.amount.toLocaleString("id-ID")}</p>
+                                        <span style={{ 
+                                            fontSize: '9px', 
+                                            background: s.status === 'Sudah Dibayar' ? '#ecfdf5' : '#fff7ed', 
+                                            color: s.status === 'Sudah Dibayar' ? '#059669' : '#9a3412', 
+                                            padding: '2px 6px', 
+                                            borderRadius: '4px', 
+                                            fontWeight: 700 
+                                        }}>
+                                            {s.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
 }

@@ -18,16 +18,26 @@ export default function LoginPage() {
         setError("");
         setLoading(true);
 
-        // Simulate brief loading
-        await new Promise((r) => setTimeout(r, 600));
+        try {
+            const res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
 
-        if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-            localStorage.setItem("frizzie_auth", "authenticated");
-            router.push("/");
-        } else {
-            setError("Email atau password salah. Silakan coba lagi.");
+            if (res.ok) {
+                const userData = await res.json();
+                localStorage.setItem("frizzie_auth", JSON.stringify(userData));
+                router.push("/");
+            } else {
+                const data = await res.json();
+                setError(data.error || "Login gagal. Silakan coba lagi.");
+            }
+        } catch (err) {
+            setError("Terjadi kesalahan jaringan.");
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }
 
     return (
@@ -67,30 +77,34 @@ export default function LoginPage() {
                 zIndex: 1,
             }}>
                 {/* Logo/Brand */}
+                <div style={{ textAlign: "center", marginBottom: "32px" }}>
                     <div style={{
-                        width: "56px", height: "56px",
+                        width: "64px", height: "64px",
                         background: "linear-gradient(135deg, #6366f1, #4338ca)",
-                        borderRadius: "50%",
+                        borderRadius: "16px",
                         display: "inline-flex",
                         alignItems: "center",
                         justifyContent: "center",
                         marginBottom: "16px",
+                        boxShadow: "0 10px 15px -3px rgba(99,102,241,0.3)",
+                        transform: "rotate(-5deg)"
                     }}>
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
                             <path d="M6 12v5c3 3 9 3 12 0v-5" />
                         </svg>
                     </div>
-                    <h1 style={{ fontSize: "22px", fontWeight: 800, color: "#0f172a", marginBottom: "4px" }}>
-                        FrizzieSmartClub
+                    <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#0f172a", marginBottom: "4px", letterSpacing: "-0.025em" }}>
+                        FrizzieSmart
                     </h1>
-                    <p style={{ color: "#64748b", fontSize: "14px" }}>Admin Panel — Masuk untuk melanjutkan</p>
+                    <p style={{ color: "#64748b", fontSize: "14px", fontWeight: 500 }}>Sistem Management — Silakan Masuk</p>
+                </div>
 
                 <form onSubmit={handleLogin}>
                     {/* Email Field */}
                     <div style={{ marginBottom: "20px" }}>
                         <label style={{ display: "block", marginBottom: "8px", fontSize: "13px", fontWeight: 600, color: "#374151" }}>
-                            Email Admin
+                            Email Pengguna
                         </label>
                         <div style={{ position: "relative" }}>
                             <div style={{
@@ -106,7 +120,7 @@ export default function LoginPage() {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Masukkan email admin"
+                                placeholder="Masukkan email anda"
                                 required
                                 autoComplete="email"
                                 style={{
@@ -234,7 +248,7 @@ export default function LoginPage() {
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" />
                                 </svg>
-                                Masuk ke Dashboard
+                                Masuk ke Sistem
                             </>
                         )}
                     </button>
@@ -243,11 +257,14 @@ export default function LoginPage() {
                 {/* Footer */}
                 <p style={{
                     textAlign: "center",
-                    marginTop: "24px",
+                    marginTop: "32px",
                     color: "#94a3b8",
                     fontSize: "12px",
+                    fontWeight: 500,
+                    lineHeight: 1.6
                 }}>
-                    © 2025 FrizzieSmartClub. Akses terbatas untuk admin.
+                    © 2025 FrizzieSmartClub. <br/>
+                    Create with ❤️ ruyatsyah
                 </p>
             </div>
         </div>

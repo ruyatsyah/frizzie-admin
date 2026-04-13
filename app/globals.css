@@ -249,7 +249,7 @@ h4 {
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: 2px 24px;
   justify-content: space-between;
 }
 
@@ -344,24 +344,38 @@ h4 {
   }
 }
 
-/* Print Styles */
+/* Print Styles - Simplified and Robust */
 @media print {
-  body * {
-    visibility: hidden;
+  .no-print, .sidebar-transition, .topbar, .sidebar {
+    display: none !important;
   }
 
-  .print-area,
-  .print-area * {
-    visibility: visible;
+  body, html {
+    background: white !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Reset layout constraints during print */
+  .app-layout, .main-content, .container, .page-content {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+    position: static !important;
   }
 
   .print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 20px;
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+  }
+
+  /* Hide everything else if it's not part of the print area */
+  body > *:not(.app-layout), .app-layout > *:not(.main-content) {
+      display: none !important;
   }
 }
 
@@ -498,4 +512,25 @@ h4 {
 
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+.btn-action {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-action:hover {
+  background-color: #F1F5F9;
+  transform: scale(1.1);
+}
+
+.btn-action:active {
+  transform: scale(0.95);
 }
