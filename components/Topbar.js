@@ -7,6 +7,24 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
     return (
         <header className="topbar" style={{ boxShadow: 'var(--shadow-sm)', borderBottom: '1px solid var(--border)', position: 'relative', zIndex: 50, justifyContent: 'space-between', padding: '4px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <button 
+                    onClick={onMenuClick}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '8px',
+                        display: 'none', // Hidden on desktop, shown via mobile-toggle below
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--text-dark)'
+                    }}
+                    className="mobile-hamburger"
+                >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                </button>
                 <span style={{ 
                     color: '#5A57DA', 
                     fontSize: '20px', 
@@ -16,6 +34,14 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                     FrizzieSmartClub
                 </span>
             </div>
+
+            <style jsx>{`
+                @media (max-width: 1024px) {
+                    .mobile-hamburger {
+                        display: flex !important;
+                    }
+                }
+            `}</style>
 
             {/* User Profile with Dropdown */}
             <div style={{ position: 'relative' }}>

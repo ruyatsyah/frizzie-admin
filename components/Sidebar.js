@@ -68,19 +68,19 @@ export default function Sidebar({ isOpen, setIsOpen, userRole }) {
 
     return (
         <aside 
-            className="sidebar-transition" 
+            className={`sidebar-transition ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}
             style={{ 
                 backgroundColor: '#ffffff', 
                 borderRight: '1px solid #E2E8F0',
-                width: isOpen ? '260px' : '72px',
                 height: '100vh',
                 display: 'flex',
                 flexDirection: 'column',
-                zIndex: 100,
+                zIndex: 1000,
                 overflow: 'hidden',
                 flexShrink: 0,
                 boxShadow: '4px 0 10px rgba(0,0,0,0.02)',
-                position: 'relative'
+                position: 'relative',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
         >
             <style jsx global>{`
@@ -90,6 +90,27 @@ export default function Sidebar({ isOpen, setIsOpen, userRole }) {
                 }
                 .sidebar-nav::-webkit-scrollbar {
                     display: none;
+                }
+                
+                /* Desktop default */
+                .sidebar-transition {
+                    width: 260px;
+                }
+                .sidebar-closed {
+                    width: 72px;
+                }
+
+                @media (max-width: 1024px) {
+                    .sidebar-transition {
+                        position: fixed !important;
+                        top: 0;
+                        left: 0;
+                        width: 280px !important;
+                        transform: translateX(0);
+                    }
+                    .sidebar-closed {
+                        transform: translateX(-100%) !important;
+                    }
                 }
             `}</style>
 

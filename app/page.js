@@ -231,21 +231,33 @@ function TeacherDashboard({ user }) {
                 
                 @media (max-width: 768px) {
                     .teacher-dashboard {
-                        padding: 12px;
+                        padding: 16px 12px;
                     }
                     .teacher-banner {
                         padding: 24px 20px;
+                        margin-bottom: 20px;
                     }
                     .teacher-stats-grid {
                         grid-template-columns: 1fr;
                         gap: 12px;
+                        margin-bottom: 20px;
                     }
                     .teacher-main-grid {
                         grid-template-columns: 1fr;
                         gap: 16px;
                     }
                     .teacher-banner h1 {
-                        font-size: 1.25rem !important;
+                        font-size: 1.4rem !important;
+                        margin-bottom: 6px !important;
+                    }
+                    .teacher-banner p {
+                        font-size: 13px !important;
+                    }
+                    .teacher-stats-grid .card {
+                        padding: 20px !important;
+                    }
+                    .teacher-stats-grid .card p:nth-child(2) {
+                        font-size: 28px !important;
                     }
                 }
             `}</style>
