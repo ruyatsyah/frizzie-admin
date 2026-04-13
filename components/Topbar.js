@@ -13,7 +13,7 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                     fontWeight: 800, 
                     letterSpacing: '-0.03em'
                 }}>
-                    FrizzieSmart
+                    FrizzieSmartClub
                 </span>
             </div>
 

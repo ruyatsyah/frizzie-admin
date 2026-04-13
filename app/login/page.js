@@ -95,7 +95,7 @@ export default function LoginPage() {
                         </svg>
                     </div>
                     <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#0f172a", marginBottom: "4px", letterSpacing: "-0.025em" }}>
-                        FrizzieSmart
+                        FrizzieSmartClub
                     </h1>
                     <p style={{ color: "#64748b", fontSize: "14px", fontWeight: 500 }}>Sistem Management — Silakan Masuk</p>
                 </div>
