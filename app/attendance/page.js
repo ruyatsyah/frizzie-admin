@@ -183,6 +183,12 @@ export default function AttendancePage() {
         </tr>
     );
 
+    if (!mounted) return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #5A57DA', borderRadius: '50%' }}></div>
+        </div>
+    );
+
     return (
         <div className="attendance-container ripple-effect">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>

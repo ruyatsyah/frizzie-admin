@@ -74,7 +74,7 @@ export default function LearningOutcomesPage() {
     }, [adminFilters]);
 
     useEffect(() => {
-        if (list.length > 0 && !swrLoading && students.length > 0) {
+        if (mounted && list.length > 0 && !swrLoading && students.length > 0) {
             const params = new URLSearchParams(window.location.search);
             const sId = params.get("sessionId");
             const stId = params.get("studentId");
@@ -91,12 +91,10 @@ export default function LearningOutcomesPage() {
                     handleEdit(studentMatch);
                     // Clear params
                     window.history.replaceState({}, '', window.location.pathname);
-                } else {
-                    console.log("Deep link match failed:", { sId, stId, listCount: list.length });
                 }
             }
         }
-    }, [list, swrLoading, students]);
+    }, [list, swrLoading, students, mounted]);
 
     // fetchData is now handled by useSWR
 
@@ -241,9 +239,16 @@ export default function LearningOutcomesPage() {
         </tr>
     );
 
+    if (!mounted) return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #5A57DA', borderRadius: '50%' }}></div>
+        </div>
+    );
+
     return (
         <div className="container ripple-effect">
-            <style jsx global>{`
+            {/* Global style for printing moved to static css or handled via style tag */}
+            <style dangerouslySetInnerHTML={{ __html: `
                 .print-area { display: none; }
                 .kop-surat { text-align: center; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 20px; }
                 .kop-surat h2 { margin: 0; color: #5A57DA; }
@@ -259,7 +264,7 @@ export default function LearningOutcomesPage() {
                     .sidebar, .topbar, .footer { display: none !important; }
                     main { margin: 0 !important; padding: 0 !important; }
                 }
-            `}</style>
+            `}} />
 
             {/* Print Layout */}
             <div className="print-area" style={{ fontFamily: '"Inter", sans-serif', color: '#1a1a1a', lineHeight: 1.5 }}>
@@ -510,7 +515,7 @@ export default function LearningOutcomesPage() {
                                 ) : list.length === 0 ? (
                                     <tr><td colSpan="7" align="center">Belum ada rekap capaian.</td></tr>
                                 ) : list.map((item) => (
-                                    <tr key={item._id || `${item.sessionId}-${item.student._id}`}>
+                                    <tr key={item._id || `${item.sessionId}-${item.student?._id || 'unknown'}-${Math.random()}`}>
                                         <td>{new Date(item.date).toLocaleDateString("id-ID")}</td>
                                         {user?.role === 'admin' && <td style={{ fontWeight: 600 }}>{item.teacher?.name}</td>}
                                         <td style={{ fontWeight: 600, color: '#5A57DA' }}>{item.student?.name}</td>
