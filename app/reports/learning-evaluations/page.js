@@ -177,11 +177,14 @@ export default function ManageEvaluationsPage() {
                         </tr>
                     </tbody>
                 </table>
-                <div style={{ marginTop: '40px', textAlign: 'right' }}>
+                <div style={{ marginTop: '40px', textAlign: 'right', float: 'right' }}>
                     <p>Bandung, {new Date().toLocaleDateString("id-ID")}</p>
-                    <br /><br /><br />
-                    <p><strong>( Admin FrizzieSmartClub )</strong></p>
+                    <div style={{ height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', margin: '5px 0' }}>
+                        <img src="/signature-salma.png" alt="Tanda Tangan" style={{ height: '80px', mixBlendMode: 'multiply' }} />
+                    </div>
+                    <p><strong>( Salma Rahmani, S.T. )</strong></p>
                 </div>
+                <div style={{ clear: 'both' }}></div>
             </div>
 
             <div className="no-print">

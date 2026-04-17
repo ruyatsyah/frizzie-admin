@@ -269,11 +269,13 @@ export default function LearningOutcomesPage() {
                         </tbody>
                     </table>
                 </div>
-                <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
                     <div style={{ textAlign: 'center' }}>
                         <p>Bandung, {new Date().toLocaleDateString("id-ID")}</p>
-                        <br /><br /><br />
-                        <p><strong>Admin FrizzieSmartClub</strong></p>
+                        <div style={{ height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '5px 0' }}>
+                            <img src="/signature-salma.png" alt="Signature" style={{ height: '70px', mixBlendMode: 'multiply' }} />
+                        </div>
+                        <p><strong>( Salma Rahmani, S.T. )</strong></p>
                     </div>
                 </div>
             </div>
@@ -422,6 +424,16 @@ export default function LearningOutcomesPage() {
                                                 </tr>
                                             </tbody>
                                         </table>
+
+                                        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                                            <div style={{ textAlign: 'center' }}>
+                                                <p style={{ fontSize: '13px' }}>Bandung, {new Date().toLocaleDateString("id-ID")}</p>
+                                                <div style={{ height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <img src="/signature-salma.png" alt="Signature" style={{ height: '60px', mixBlendMode: 'multiply' }} />
+                                                </div>
+                                                <p style={{ fontSize: '13px' }}><strong>( Salma Rahmani, S.T. )</strong></p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

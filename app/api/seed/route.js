@@ -30,7 +30,7 @@ export async function GET() {
         let salma = await Teacher.findOne({ name: /Salma/i });
         if (!salma) {
             salma = await Teacher.create({
-                name: "Salma Rahmani",
+                name: "Salma Rahmani, S.T.",
                 contact: "08123456789",
                 subjects: ["Matematika", "IPA"]
             });
