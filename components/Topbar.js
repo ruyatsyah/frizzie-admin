@@ -13,24 +13,31 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        color: '#0f172a',
-                        borderRadius: '12px',
-                        display: 'none',
+                        color: '#5A57DA',
+                        borderRadius: '10px',
+                        display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         transition: 'all 0.2s',
-                        width: '32px',
-                        height: '32px'
+                        width: '38px',
+                        height: '38px',
+                        padding: 0
                     }}
-                    className="mobile-hamburger"
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    className="hamburger-btn"
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(90, 87, 218, 0.08)';
+                        e.currentTarget.style.transform = 'scale(1.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.transform = 'scale(1)';
+                    }}
                 >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
                     </svg>
                 </button>
-                <span style={{ 
+                <span className="brand-name" style={{ 
                     color: '#5A57DA', 
                     fontSize: '20px', 
                     fontWeight: 800, 
@@ -41,9 +48,24 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
             </div>
 
             <style jsx>{`
-                @media (max-width: 1024px) {
-                    .mobile-hamburger {
-                        display: flex !important;
+                .hamburger-btn {
+                    display: flex;
+                }
+                @media (min-width: 1025px) {
+                    .hamburger-btn {
+                        display: none !important;
+                    }
+                }
+                @media (max-width: 640px) {
+                    .user-name-text {
+                        display: none;
+                    }
+                    .user-profile-btn {
+                        padding: 4px !important;
+                        gap: 4px !important;
+                    }
+                    .brand-name {
+                        font-size: 16px !important;
                     }
                 }
             `}</style>
@@ -52,17 +74,21 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
             <div style={{ position: 'relative' }}>
                 <button
                     onClick={() => setShowDropdown(!showDropdown)}
+                    className="user-profile-btn"
                     style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '10px',
-                        background: 'none',
+                        background: 'white',
                         border: '1px solid var(--border)',
                         borderRadius: '12px',
                         padding: '6px 12px 6px 6px',
                         cursor: 'pointer',
                         transition: 'all 0.2s',
+                        boxShadow: 'var(--shadow-sm)'
                     }}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
                 >
                     <div style={{
                         width: '32px',
@@ -74,14 +100,15 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontWeight: 700,
-                        fontSize: '13px'
+                        fontSize: '13px',
+                        boxShadow: '0 2px 4px rgba(99, 102, 241, 0.3)'
                     }}>
                         {user?.name?.charAt(0) || "U"}
                     </div>
-                    <div style={{ textAlign: 'left' }}>
+                    <div className="user-name-text" style={{ textAlign: 'left' }}>
                         <p style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-dark)', lineHeight: 1.2 }}>{user?.name || "User"}</p>
                     </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-light)', transition: 'transform 0.2s', transform: showDropdown ? 'rotate(180deg)' : 'rotate(0)' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-light)', transition: 'transform 0.2s', transform: showDropdown ? 'rotate(180deg)' : 'rotate(0)' }}>
                         <polyline points="6 9 12 15 18 9" />
                     </svg>
                 </button>

@@ -129,20 +129,27 @@ export default function Sidebar({ isOpen, setIsOpen, userRole }) {
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        color: '#0f172a', // More visible dark color
-                        borderRadius: '12px',
+                        color: '#5A57DA',
+                        borderRadius: '10px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         transition: 'all 0.2s',
                         width: '32px',
-                        height: '32px'
+                        height: '32px',
+                        padding: 0
                     }}
                     className="btn-sidebar-toggle"
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(90, 87, 218, 0.08)';
+                        e.currentTarget.style.transform = 'scale(1.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.transform = 'scale(1)';
+                    }}
                 >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
                     </svg>
                 </button>
@@ -242,7 +249,7 @@ export default function Sidebar({ isOpen, setIsOpen, userRole }) {
                                             }}
                                             title={!isOpen ? item.name : ''}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                 <div style={{ width: '24px', height: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
                                                     {item.icon}
                                                 </div>

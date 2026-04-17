@@ -122,16 +122,16 @@ export default function AppLayout({ children }) {
                     padding: '20px 24px', 
                     borderTop: '1px solid var(--border)',
                     display: 'flex',
-                    justifyContent: 'space-between',
+                    justifyContent: 'flex-end',
                     alignItems: 'center',
+                    gap: '24px',
                     color: '#94a3b8',
                     fontSize: '12px',
                     fontWeight: 500,
                     letterSpacing: '0.025em',
                     width: '100%'
                 }}>
-                    <div>© 2025 FrizzieSmartClub</div>
-                    <div>Create with ❤️ ruyatsyah</div>
+                    © 2025 FrizzieSmartClub • Created with ❤️ ruyatsyah
                 </footer>
             </main>
 
