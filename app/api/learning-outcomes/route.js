@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 import dbConnect from "@/lib/mongodb";
 import LearningOutcome from "@/models/LearningOutcome";
+import Teacher from "@/models/Teacher";
+import Student from "@/models/Student";
 
 export async function GET(req) {
     try {

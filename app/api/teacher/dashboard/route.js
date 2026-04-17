@@ -4,6 +4,8 @@ import dbConnect from "@/lib/mongodb";
 import LearningOutcome from "@/models/LearningOutcome";
 import Attendance from "@/models/Attendance";
 import Salary from "@/models/Salary";
+import Student from "@/models/Student";
+import Teacher from "@/models/Teacher";
 import mongoose from "mongoose";
 
 export async function GET(req) {
