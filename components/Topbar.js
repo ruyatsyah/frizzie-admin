@@ -47,28 +47,7 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                 </span>
             </div>
 
-            <style jsx>{`
-                .hamburger-btn {
-                    display: flex;
-                }
-                @media (min-width: 1025px) {
-                    .hamburger-btn {
-                        display: none !important;
-                    }
-                }
-                @media (max-width: 640px) {
-                    .user-name-text {
-                        display: none;
-                    }
-                    .user-profile-btn {
-                        padding: 4px !important;
-                        gap: 4px !important;
-                    }
-                    .brand-name {
-                        font-size: 16px !important;
-                    }
-                }
-            `}</style>
+
 
             {/* User Profile with Dropdown */}
             <div style={{ position: 'relative' }}>

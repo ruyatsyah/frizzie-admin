@@ -83,36 +83,7 @@ export default function Sidebar({ isOpen, setIsOpen, userRole }) {
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
         >
-            <style jsx global>{`
-                .sidebar-nav {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                }
-                .sidebar-nav::-webkit-scrollbar {
-                    display: none;
-                }
-                
-                /* Desktop default */
-                .sidebar-transition {
-                    width: 260px;
-                }
-                .sidebar-closed {
-                    width: 72px;
-                }
 
-                @media (max-width: 1024px) {
-                    .sidebar-transition {
-                        position: fixed !important;
-                        top: 0;
-                        left: 0;
-                        width: 280px !important;
-                        transform: translateX(0);
-                    }
-                    .sidebar-closed {
-                        transform: translateX(-100%) !important;
-                    }
-                }
-            `}</style>
 
             {/* Header - Hamburger Left Aligned @ 22px */}
             <div style={{ 

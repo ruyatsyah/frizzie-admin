@@ -1,37 +1,36 @@
 "use client";
 import { useEffect, useState } from "react";
+import useSWR, { mutate } from "swr";
+import fetcher from "@/lib/fetcher";
 import { showToast } from "@/components/Toast";
 import FormModal from "@/components/FormModal";
 import ConfirmModal from "@/components/ConfirmModal";
 
 export default function ManageEvaluationsPage() {
-    const [evals, setEvals] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [mounted, setMounted] = useState(false);
     const [search, setSearch] = useState("");
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedEval, setSelectedEval] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
 
+    // SWR for Evaluations
+    const apiUrl = `/api/learning-evaluations?page=${page}&limit=10`;
+    const { data: swrData, isLoading: loading } = useSWR(mounted ? apiUrl : null, fetcher);
+    const evals = swrData?.data || [];
+    const totalPages = swrData?.totalPages || 1;
+
     // For Printing
     const [printData, setPrintData] = useState({ studentName: "", startDate: "", endDate: "", cps: [], evaluation: null });
 
     useEffect(() => {
-        fetchEvals();
+        setMounted(true);
     }, []);
 
-    const fetchEvals = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch("/api/learning-evaluations");
-            const data = await res.json();
-            setEvals(Array.isArray(data) ? data : []);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const refreshData = () => mutate(apiUrl);
+
+
 
     const handleDelete = (id) => {
         setDeleteId(id);
@@ -43,11 +42,11 @@ export default function ManageEvaluationsPage() {
             const res = await fetch(`/api/learning-evaluations/${deleteId}`, { method: "DELETE" });
             if (res.ok) {
                 showToast("Evaluasi berhasil dihapus");
-                setDeleteId(null);
-                fetchEvals();
+                refreshData();
             }
         } catch (e) { 
             showToast("Gagal menghapus", "error"); 
+        } finally {
             setDeleteId(null);
         }
     };
@@ -69,7 +68,7 @@ export default function ManageEvaluationsPage() {
             if (res.ok) {
                 showToast("Evaluasi diperbarui!");
                 setIsEditModalOpen(false);
-                fetchEvals();
+                refreshData();
             }
         } catch (e) { showToast("Gagal memperbarui", "error"); }
         finally { setIsSaving(false); }
@@ -102,18 +101,23 @@ export default function ManageEvaluationsPage() {
         e.student?.name?.toLowerCase().includes(search.toLowerCase())
     );
 
+    if (!mounted) return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #5A57DA', borderRadius: '50%' }}></div>
+        </div>
+    );
+
+    const SkeletonRow = () => (
+        <tr>
+            <td><div className="skeleton" style={{ height: '20px', width: '150px' }}></div></td>
+            <td><div className="skeleton" style={{ height: '20px', width: '180px' }}></div></td>
+            <td><div className="skeleton" style={{ height: '20px', width: '150px' }}></div></td>
+            <td style={{ textAlign: "center" }}><div className="skeleton" style={{ height: '32px', width: '100px', margin: '0 auto' }}></div></td>
+        </tr>
+    );
+
     return (
-        <div className="container ripple-effect">
-            <style jsx global>{`
-                .print-area { display: none; }
-                .kop-surat { text-align: center; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 20px; }
-                .kop-surat h2 { margin: 0; color: #5A57DA; }
-                
-                /* Component specific print overrides */
-                @media print {
-                    .print-area { display: block !important; }
-                }
-            `}</style>
+        <div className="ripple-effect">
 
             {/* Hidden Print Layout */}
             <div className="print-area" style={{ width: '100%', padding: '0 20px' }}>
@@ -143,7 +147,7 @@ export default function ManageEvaluationsPage() {
                             <tr><td colSpan="3" style={{ padding: '30px', textAlign: 'center' }}>Tidak ada data capaian pembelajaran.</td></tr>
                         ) : printData.cps.map(cp => (
                             <tr key={cp._id}>
-                                <td style={{ padding: '12px', textAlign: 'center', verticalAlign: 'middle' }}>{new Date(cp.date).toLocaleDateString("id-ID")}</td>
+                                <td style={{ padding: '12px', textAlign: 'center', verticalAlign: 'middle' }}>{cp.date ? new Date(cp.date).toLocaleDateString("id-ID") : "-"}</td>
                                 <td style={{ padding: '12px' }}>
                                     <div style={{ fontWeight: 700, fontSize: '15px', marginBottom: '2px' }}>{cp.subject}</div>
                                     <div style={{ fontSize: '12px', color: '#444' }}>{cp.material}</div>
@@ -187,10 +191,10 @@ export default function ManageEvaluationsPage() {
                 <div style={{ clear: 'both' }}></div>
             </div>
 
-            <div className="no-print">
+            <div className="no-print" style={{ paddingBottom: '40px' }}>
                 <h1 className="page-title">Manajemen Evaluasi Pembelajaran</h1>
                 
-                <div className="card" style={{ marginBottom: '20px' }}>
+                <div className="card" style={{ marginBottom: '24px' }}>
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                         <input 
@@ -203,7 +207,7 @@ export default function ManageEvaluationsPage() {
                     </div>
                 </div>
 
-                <div className="card">
+                <div className="card" style={{ marginBottom: '24px' }}>
                     <div className="table-wrapper">
                         <table className="data-table">
                             <thead>
@@ -216,15 +220,19 @@ export default function ManageEvaluationsPage() {
                             </thead>
                             <tbody>
                                 {loading ? (
-                                    <tr><td colSpan="4" align="center">Memuat...</td></tr>
+                                    <>
+                                        <SkeletonRow />
+                                        <SkeletonRow />
+                                        <SkeletonRow />
+                                    </>
                                 ) : filteredEvals.length === 0 ? (
                                     <tr><td colSpan="4" align="center">Tidak ada data evaluasi.</td></tr>
                                 ) : filteredEvals.map((ev) => (
                                     <tr key={ev._id}>
-                                        <td>{new Date(ev.createdAt).toLocaleString("id-ID")}</td>
-                                        <td style={{ fontWeight: 600, color: 'var(--primary)' }}>{ev.student?.name}</td>
+                                        <td>{ev.createdAt ? new Date(ev.createdAt).toLocaleString("id-ID") : "-"}</td>
+                                        <td style={{ fontWeight: 600, color: 'var(--primary)' }}>{ev.student?.name || "Murid tidak ditemukan"}</td>
                                         <td style={{ fontSize: '13px' }}>
-                                            {new Date(ev.startDate).toLocaleDateString("id-ID")} - {new Date(ev.endDate).toLocaleDateString("id-ID")}
+                                            {ev.startDate ? new Date(ev.startDate).toLocaleDateString("id-ID") : "-"} s/d {ev.endDate ? new Date(ev.endDate).toLocaleDateString("id-ID") : "-"}
                                         </td>
                                         <td>
                                             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -244,6 +252,31 @@ export default function ManageEvaluationsPage() {
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Pagination Controls */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', padding: '16px 0', borderTop: '1px solid #f1f5f9' }}>
+                        <div style={{ fontSize: '13px', color: 'var(--text-light)' }}>
+                            Halaman <strong>{page}</strong> dari <strong>{totalPages}</strong>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button 
+                                disabled={page <= 1 || loading}
+                                onClick={() => setPage(page - 1)}
+                                className="btn-outline"
+                                style={{ padding: '6px 16px', opacity: (page <= 1 || loading) ? 0.5 : 1 }}
+                            >
+                                Sebelumnya
+                            </button>
+                            <button 
+                                disabled={page >= totalPages || loading}
+                                onClick={() => setPage(page + 1)}
+                                className="btn-outline"
+                                style={{ padding: '6px 16px', opacity: (page >= totalPages || loading) ? 0.5 : 1 }}
+                            >
+                                Berikutnya
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -258,11 +291,11 @@ export default function ManageEvaluationsPage() {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600 }}>Rentang Mulai</label>
-                                <input type="text" value={new Date(selectedEval.startDate).toLocaleDateString("id-ID")} disabled style={{ backgroundColor: '#F1F5F9', height: '42px', border: '1px solid #E2E8F0', borderRadius: '8px', cursor: 'not-allowed' }} />
+                                <input type="text" value={selectedEval.startDate ? new Date(selectedEval.startDate).toLocaleDateString("id-ID") : "-"} disabled style={{ backgroundColor: '#F1F5F9', height: '42px', border: '1px solid #E2E8F0', borderRadius: '8px', cursor: 'not-allowed' }} />
                             </div>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600 }}>Rentang Selesai</label>
-                                <input type="text" value={new Date(selectedEval.endDate).toLocaleDateString("id-ID")} disabled style={{ backgroundColor: '#F1F5F9', height: '42px', border: '1px solid #E2E8F0', borderRadius: '8px', cursor: 'not-allowed' }} />
+                                <input type="text" value={selectedEval.endDate ? new Date(selectedEval.endDate).toLocaleDateString("id-ID") : "-"} disabled style={{ backgroundColor: '#F1F5F9', height: '42px', border: '1px solid #E2E8F0', borderRadius: '8px', cursor: 'not-allowed' }} />
                             </div>
                         </div>
                         <div>

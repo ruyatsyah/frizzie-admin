@@ -547,3 +547,149 @@ h4 {
   from { background-position: 200% 0; }
   to { background-position: -200% 0; }
 }
+
+/* Sidebar Specific Styles */
+.sidebar-transition {
+    width: 260px;
+}
+.sidebar-closed {
+    width: 72px;
+}
+
+.sidebar-nav {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+.sidebar-nav::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+}
+
+@media (max-width: 1024px) {
+    .sidebar-transition {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 280px !important;
+        transform: translateX(0);
+    }
+    .sidebar-closed {
+        transform: translateX(-100%) !important;
+    }
+    .mobile-backdrop {
+        display: block !important;
+    }
+    .main-content {
+        width: 100vw !important;
+    }
+}
+
+/* Topbar Specific Styles */
+.hamburger-btn {
+    display: flex;
+}
+@media (min-width: 1025px) {
+    .hamburger-btn {
+        display: none !important;
+    }
+}
+@media (max-width: 640px) {
+    .user-name-text {
+        display: none;
+    }
+    .user-profile-btn {
+        padding: 4px !important;
+        gap: 4px !important;
+    }
+    .brand-name {
+        font-size: 16px !important;
+    }
+    footer.no-print {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+}
+
+/* Teacher Dashboard Specific Styles */
+.teacher-dashboard {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.teacher-banner {
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+    border-radius: 16px;
+    padding: 32px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+.teacher-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.teacher-main-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 768px) {
+    .teacher-dashboard {
+        padding: 16px 12px;
+    }
+    .teacher-banner {
+        padding: 24px 20px;
+        margin-bottom: 20px;
+    }
+    .teacher-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .teacher-main-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .teacher-banner h1 {
+        font-size: 1.4rem !important;
+        margin-bottom: 6px !important;
+    }
+    .teacher-banner p {
+        font-size: 13px !important;
+    }
+    .teacher-stats-grid .card {
+        padding: 20px !important;
+    }
+    .teacher-stats-grid .card p:nth-child(2) {
+        font-size: 28px !important;
+    }
+}
+
+/* Print Styles & Kop Surat */
+.print-area { display: none; }
+.kop-surat { 
+    text-align: center; 
+    border-bottom: 4px double #111; 
+    padding-bottom: 16px; 
+    margin-bottom: 32px; 
+}
+.kop-surat h2 { margin: 0; color: var(--primary); }
+.kop-surat p { margin: 4px 0; font-size: 13px; color: #666; }
+
+@media print {
+    body { background: white !important; margin: 0; padding: 0; }
+    .no-print { display: none !important; }
+    .print-area { 
+        display: block !important; 
+        width: 100% !important;
+    }
+    .sidebar, .topbar, .footer { display: none !important; }
+    main { margin: 0 !important; padding: 0 !important; }
+    
+    .card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+}

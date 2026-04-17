@@ -1,35 +1,29 @@
 "use client";
 import { useEffect, useState } from "react";
+import useSWR, { mutate } from "swr";
+import fetcher from "@/lib/fetcher";
 import { showToast } from "@/components/Toast";
 import ConfirmModal from "@/components/ConfirmModal";
 
 export default function SalariesPage() {
-    const [salaries, setSalaries] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [mounted, setMounted] = useState(false);
     const [printData, setPrintData] = useState(null);
     const [toggleData, setToggleData] = useState(null); // For status toggle confirmation
 
+    // SWR for Salaries
+    const apiUrl = `/api/salaries?page=${page}&limit=10`;
+    const { data: swrData, isLoading } = useSWR(mounted ? apiUrl : null, fetcher);
+    const salaries = swrData?.data || [];
+    const totalPages = swrData?.totalPages || 1;
+
     useEffect(() => {
-        fetchSalaries();
+        setMounted(true);
     }, []);
 
-    const fetchSalaries = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch("/api/salaries");
-            const data = await res.json();
-            if (Array.isArray(data)) {
-                setSalaries(data);
-            } else {
-                setSalaries([]);
-            }
-        } catch (e) {
-            console.error(e);
-            setSalaries([]);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const refreshData = () => mutate(apiUrl);
+
+
 
     const toggleStatus = (salary) => {
         setToggleData(salary);
@@ -47,7 +41,7 @@ export default function SalariesPage() {
 
             if (res.ok) {
                 showToast(`Status gaji berhasil diubah ke ${newStatus}`);
-                fetchSalaries();
+                refreshData();
             } else {
                 showToast("Gagal mengubah status", "error");
             }
@@ -64,6 +58,23 @@ export default function SalariesPage() {
             window.print();
         }, 100);
     };
+
+    if (!mounted) return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #5A57DA', borderRadius: '50%' }}></div>
+        </div>
+    );
+
+    const SkeletonRow = () => (
+        <tr>
+            <td><div className="skeleton" style={{ height: '20px', width: '150px' }}></div></td>
+            <td><div className="skeleton" style={{ height: '20px', width: '100px' }}></div></td>
+            <td><div className="skeleton" style={{ height: '20px', width: '80px' }}></div></td>
+            <td><div className="skeleton" style={{ height: '32px', width: '120px', borderRadius: '8px' }}></div></td>
+            <td><div className="skeleton" style={{ height: '32px', width: '120px', borderRadius: '8px' }}></div></td>
+            <td style={{ textAlign: "right" }}><div className="skeleton" style={{ height: '24px', width: '24px', marginLeft: 'auto' }}></div></td>
+        </tr>
+    );
 
     return (
         <div>
@@ -95,8 +106,12 @@ export default function SalariesPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? (
-                                <tr><td colSpan="6" style={{ textAlign: "center", padding: "32px" }}>Memuat data...</td></tr>
+                            {isLoading ? (
+                                <>
+                                    <SkeletonRow />
+                                    <SkeletonRow />
+                                    <SkeletonRow />
+                                </>
                             ) : salaries.length === 0 ? (
                                 <tr><td colSpan="6" style={{ textAlign: "center", color: "var(--text-light)", padding: "32px" }}>Belum ada data gaji yang tercatat dari absensi.</td></tr>
                             ) : salaries.map((salary) => (
@@ -140,6 +155,31 @@ export default function SalariesPage() {
                             ))}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Pagination Controls */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', padding: '16px 0', borderTop: '1px solid #f1f5f9' }}>
+                    <div style={{ fontSize: '13px', color: 'var(--text-light)' }}>
+                        Halaman <strong>{page}</strong> dari <strong>{totalPages}</strong>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                            disabled={page <= 1 || isLoading}
+                            onClick={() => setPage(page - 1)}
+                            className="btn-outline"
+                            style={{ padding: '6px 16px', opacity: (page <= 1 || isLoading) ? 0.5 : 1 }}
+                        >
+                            Sebelumnya
+                        </button>
+                        <button 
+                            disabled={page >= totalPages || isLoading}
+                            onClick={() => setPage(page + 1)}
+                            className="btn-outline"
+                            style={{ padding: '6px 16px', opacity: (page >= totalPages || isLoading) ? 0.5 : 1 }}
+                        >
+                            Berikutnya
+                        </button>
+                    </div>
                 </div>
             </div>
 

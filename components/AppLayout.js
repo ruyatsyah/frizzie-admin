@@ -135,23 +135,6 @@ export default function AppLayout({ children }) {
                 </footer>
             </main>
 
-            <style jsx global>{`
-                @media (max-width: 1024px) {
-                    .mobile-backdrop {
-                        display: block !important;
-                    }
-                    .main-content {
-                        width: 100vw !important;
-                    }
-                }
-                @media (max-width: 640px) {
-                    footer.no-print {
-                        flex-direction: column;
-                        gap: 8px;
-                        text-align: center;
-                    }
-                }
-            `}</style>
         </div>
     );
 }

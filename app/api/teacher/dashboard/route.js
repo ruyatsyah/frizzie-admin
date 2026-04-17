@@ -22,28 +22,34 @@ export async function GET(req) {
         }
 
         const tId = new mongoose.Types.ObjectId(teacherId);
-
-        // 1. Stats
-        const cpCount = await LearningOutcome.countDocuments({ teacher: tId });
-        
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const sessionsThisMonth = await Attendance.countDocuments({
-            teacher: tId,
-            date: { $gte: startOfMonth }
-        });
 
-        // 2. Recent CP
-        const recentCP = await LearningOutcome.find({ teacher: tId })
-            .sort({ date: -1 })
-            .limit(5)
-            .populate("student", "name");
-
-        // 3. Pending CP Tasks (Sessions from Attendance that need Reports)
-        const recentSessions = await Attendance.find({ teacher: tId })
-            .sort({ date: -1 })
-            .limit(20)
-            .populate("studentsTaught.student", "name");
+        // Fetch all initial data in parallel
+        const [
+            cpCount,
+            sessionsThisMonth,
+            recentCP,
+            recentSessions,
+            salaries
+        ] = await Promise.all([
+            LearningOutcome.countDocuments({ teacher: tId }),
+            Attendance.countDocuments({
+                teacher: tId,
+                date: { $gte: startOfMonth }
+            }),
+            LearningOutcome.find({ teacher: tId })
+                .sort({ date: -1 })
+                .limit(5)
+                .populate("student", "name"),
+            Attendance.find({ teacher: tId })
+                .sort({ date: -1 })
+                .limit(20)
+                .populate("studentsTaught.student", "name"),
+            Salary.find({ teacher: tId })
+                .sort({ createdAt: -1 })
+                .limit(10)
+        ]);
 
         const existingCP = await LearningOutcome.find({ 
             teacher: tId, 
@@ -74,11 +80,6 @@ export async function GET(req) {
                 }
             }
         }
-
-        // 4. Salary History
-        const salaries = await Salary.find({ teacher: tId })
-            .sort({ createdAt: -1 })
-            .limit(10);
 
         return NextResponse.json({
             stats: { cpCount, sessionsThisMonth },

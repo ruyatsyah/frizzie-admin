@@ -8,42 +8,85 @@ import Student from "@/models/Student";
 export async function GET(req) {
     try {
         await dbConnect();
-        
-        // Fetch all teacher sessions
-        const data = await Attendance.find({})
-            .populate("teacher")
-            .populate("studentsTaught.student")
-            .sort({ date: -1, createdAt: -1 });
-
-        // Flatten data for student view: Every row = one student attendance
-        const flattened = [];
-        data.forEach(session => {
-            const students = session.studentsTaught || [];
-            students.forEach(st => {
-                flattened.push({
-                    _id: `${session._id}-${st._id}`,
-                    sessionId: session._id,
-                    date: session.date,
-                    teacherName: session.teacher?.name,
-                    studentId: st.student?._id, // Add ID for filtering
-                    studentName: st.student?.name,
-                    grade: st.student?.grade,
-                    subject: st.subject,
-                    status: st.status,
-                    notes: session.notes
-                });
-            });
-        });
-
         const { searchParams } = new URL(req.url);
         const studentId = searchParams.get("studentId");
-        
-        let filteredData = flattened;
+        const page = parseInt(searchParams.get("page")) || 1;
+        const limitParam = searchParams.get("limit");
+        const isExport = limitParam === "all";
+        const limit = isExport ? 100000 : parseInt(limitParam) || 10;
+        const skip = (page - 1) * limit;
+
+        // Build Aggregation Pipeline
+        const pipeline = [
+            { $unwind: "$studentsTaught" },
+            {
+                $lookup: {
+                    from: "teachers",
+                    localField: "teacher",
+                    foreignField: "_id",
+                    as: "teacherData"
+                }
+            },
+            { $unwind: { path: "$teacherData", preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: "students",
+                    localField: "studentsTaught.student",
+                    foreignField: "_id",
+                    as: "studentData"
+                }
+            },
+            { $unwind: { path: "$studentData", preserveNullAndEmptyArrays: true } }
+        ];
+
+        // Conditional Match
         if (studentId) {
-            filteredData = flattened.filter(item => item.studentId?.toString() === studentId);
+            const mongoose = (await import("mongoose")).default;
+            pipeline.push({ 
+                $match: { "studentsTaught.student": new mongoose.Types.ObjectId(studentId) } 
+            });
         }
 
-        return NextResponse.json(filteredData);
+        // Common steps: Mapping and Sorting
+        pipeline.push(
+            {
+                $project: {
+                    _id: { $concat: [{ $toString: "$_id" }, "-", { $toString: "$studentsTaught._id" }] },
+                    date: 1,
+                    teacherName: "$teacherData.name",
+                    studentId: "$studentsTaught.student",
+                    studentName: "$studentData.name",
+                    grade: "$studentData.grade",
+                    subject: "$studentsTaught.subject",
+                    status: "$studentsTaught.status"
+                }
+            },
+            { $sort: { date: -1 } }
+        );
+
+        if (isExport) {
+            const data = await Attendance.aggregate(pipeline);
+            return NextResponse.json(data);
+        }
+
+        // Paginated Facet
+        pipeline.push({
+            $facet: {
+                data: [{ $skip: skip }, { $limit: limit }],
+                totalCount: [{ $count: "count" }]
+            }
+        });
+
+        const result = await Attendance.aggregate(pipeline);
+        const data = result[0].data;
+        const total = result[0].totalCount[0]?.count || 0;
+
+        return NextResponse.json({
+            data,
+            totalPages: Math.ceil(total / limit),
+            currentPage: page,
+            totalItems: total
+        });
     } catch (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

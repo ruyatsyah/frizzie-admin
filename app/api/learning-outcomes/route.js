@@ -21,12 +21,12 @@ export async function GET(req) {
             // If the user forgot to link teacherId but we have the User ID, we can search for it too
             // However, we primarily want the Teacher ID.
         }
-        if (studentId) query.student = studentId;
+        if (studentId && studentId.trim() !== "") query.student = studentId;
         
-        if (startDate || endDate) {
+        if ((startDate && startDate.trim() !== "") || (endDate && endDate.trim() !== "")) {
             query.date = {};
-            if (startDate) query.date.$gte = new Date(startDate);
-            if (endDate) query.date.$lte = new Date(endDate);
+            if (startDate && startDate.trim() !== "") query.date.$gte = new Date(startDate);
+            if (endDate && endDate.trim() !== "") query.date.$lte = new Date(endDate);
         }
 
         const page = parseInt(searchParams.get("page")) || 1;

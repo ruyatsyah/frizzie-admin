@@ -190,22 +190,24 @@ export default function AttendancePage() {
     );
 
     return (
-        <div className="attendance-container ripple-effect">
+        <div className="ripple-effect">
+            <div className="no-print" style={{ paddingBottom: '40px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h1 className="page-title" style={{ margin: 0 }}>Absensi Kehadiran</h1>
                 <button 
                     onClick={() => { resetForm(); setIsModalOpen(true); }} 
                     className="btn-primary"
-                    style={{ backgroundColor: '#5A57DA', borderRadius: '12px', padding: '10px 20px', fontWeight: 600 }}
+                    style={{ borderRadius: '12px' }}
                 >
                     + Tambah Sesi Mengajar
                 </button>
             </div>
 
-            <div className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <h3 style={{ margin: 0 }}>History Terakhir</h3>
-                    <span style={{ fontSize: '13px', color: 'var(--text-light)' }}>Menampilkan 20 sesi terakhir</span>
+            <div className="card" style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <h3 style={{ margin: 0 }}>Riwayat Sesi Terakhir</h3>
+                    </div>
                 </div>
                 
                 <div className="table-wrapper">
@@ -231,46 +233,45 @@ export default function AttendancePage() {
                                 <tr><td colSpan="6" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-light)' }}>Belum ada data absensi. Klik "+ Tambah Sesi" untuk memulai.</td></tr>
                             ) : attendanceList.map((item) => (
                                 <tr key={item._id}>
-                                    <td style={{ fontWeight: 600, color: '#0f172a' }}>{new Date(item.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}</td>
-                                    <td style={{ fontWeight: 600, color: '#5A57DA' }}>{item.teacher?.name}</td>
+                                    <td style={{ color: 'var(--text-dark)', fontWeight: 500 }}>{new Date(item.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}</td>
+                                    <td style={{ fontWeight: 600, color: 'var(--primary)' }}>{item.teacher?.name}</td>
                                     <td>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#1e293b' }}>{item.studentsTaught?.length || 0} Murid di Sesi Ini:</span>
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-dark)' }}>{item.studentsTaught?.length || 0} Murid di Sesi Ini:</span>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                                                 {item.studentsTaught?.map((s, idx) => (
                                                     <span key={idx} style={{ 
-                                                        backgroundColor: '#f1f5f9', 
-                                                        color: '#475569', 
-                                                        fontSize: '10px', 
-                                                        padding: '2px 8px', 
-                                                        borderRadius: '99px',
-                                                        border: '1px solid #e2e8f0',
-                                                        whiteSpace: 'nowrap'
+                                                        backgroundColor: 'var(--background)', 
+                                                        color: 'var(--text-dark)', 
+                                                        fontSize: '11px', 
+                                                        padding: '4px 10px', 
+                                                        borderRadius: '8px',
+                                                        border: '1px solid var(--border)',
+                                                        whiteSpace: 'nowrap',
+                                                        fontWeight: 500
                                                     }}>
-                                                        {s.student?.name} • {s.subject}
+                                                        {s.student?.name} <span style={{ opacity: 0.6 }}>•</span> {s.subject}
                                                     </span>
                                                 ))}
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span style={{ 
-                                                padding: '4px 10px', 
-                                                borderRadius: '20px', 
-                                                fontSize: '11px', 
-                                                fontWeight: 700,
-                                                backgroundColor: item.cpCount >= item.studentCount ? '#dcfce7' : (item.cpCount > 0 ? '#fef9c3' : '#fee2e2'),
-                                                color: item.cpCount >= item.studentCount ? '#166534' : (item.cpCount > 0 ? '#854d0e' : '#991b1b'),
-                                                border: '1px solid currentColor',
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '4px'
-                                            }}>
-                                                {item.cpCount >= item.studentCount ? '✅ Lengkap' : (item.cpCount > 0 ? '⏳ Sebagian' : '❌ Belum')}
-                                                <span style={{ opacity: 0.7 }}>({item.cpCount}/{item.studentCount})</span>
-                                            </span>
-                                        </div>
+                                        <span style={{ 
+                                            padding: '4px 12px', 
+                                            borderRadius: '8px', 
+                                            fontSize: '12px', 
+                                            fontWeight: 700,
+                                            backgroundColor: item.cpCount >= item.studentCount ? '#ecfdf5' : (item.cpCount > 0 ? '#fffbeb' : '#fef2f2'),
+                                            color: item.cpCount >= item.studentCount ? 'var(--success)' : (item.cpCount > 0 ? 'var(--warning)' : 'var(--danger)'),
+                                            border: '1px solid currentColor',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '6px'
+                                        }}>
+                                            {item.cpCount >= item.studentCount ? '✓ Lengkap' : (item.cpCount > 0 ? '○ Sebagian' : '✕ Belum')}
+                                            <span style={{ opacity: 0.7, fontSize: '10px' }}>{item.cpCount}/{item.studentCount}</span>
+                                        </span>
                                     </td>
                                     <td style={{ color: 'var(--text-light)', fontSize: '12px' }}>
                                         <div style={{ fontStyle: item.notes ? 'normal' : 'italic' }}>{item.notes || "Tidak ada catatan"}</div>
@@ -450,6 +451,7 @@ export default function AttendancePage() {
                     onCancel={() => setDeleteId(null)}
                 />
             )}
+            </div>
         </div>
     );
 }

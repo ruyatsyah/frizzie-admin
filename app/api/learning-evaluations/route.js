@@ -13,16 +13,31 @@ export async function GET(req) {
         const endDate = searchParams.get("endDate");
 
         if (!studentId && !startDate && !endDate) {
-            const allEvaluations = await LearningEvaluation.find({})
-                .sort({ createdAt: -1 })
-                .populate("student", "name");
-            return NextResponse.json(allEvaluations);
+            const page = parseInt(searchParams.get("page")) || 1;
+            const limit = parseInt(searchParams.get("limit")) || 10;
+            const skip = (page - 1) * limit;
+
+            const [data, total] = await Promise.all([
+                LearningEvaluation.find({})
+                    .sort({ createdAt: -1 })
+                    .populate("student", "name")
+                    .skip(skip)
+                    .limit(limit),
+                LearningEvaluation.countDocuments({})
+            ]);
+
+            return NextResponse.json({
+                data,
+                totalPages: Math.ceil(total / limit),
+                currentPage: page,
+                totalItems: total
+            });
         }
 
         const evaluation = await LearningEvaluation.findOne({
             student: studentId,
-            startDate: new Date(startDate),
-            endDate: new Date(endDate)
+            startDate: (startDate && startDate.trim() !== "") ? new Date(startDate) : null,
+            endDate: (endDate && endDate.trim() !== "") ? new Date(endDate) : null
         });
 
         return NextResponse.json(evaluation || { 

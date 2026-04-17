@@ -8,30 +8,42 @@ import Student from "@/models/Student";
 export async function GET(req) {
     try {
         await dbConnect();
-        
-        // Populate and fetch all
-        const data = await Attendance.find({})
-            .populate("teacher")
-            .populate("studentsTaught.student")
-            .sort({ date: -1, createdAt: -1 });
-
-        // We can do further grouping on the client or here.
-        // Let's provide raw data for now, filtered by teacher if query param exists.
-        // Map data to ensure studentsTaught exists
-        const safeData = data.map(item => ({
-            ...item.toObject(),
-            studentsTaught: item.studentsTaught || []
-        }));
-
         const { searchParams } = new URL(req.url);
         const teacherId = searchParams.get("teacherId");
-        
-        let filteredData = safeData;
-        if (teacherId) {
-            filteredData = safeData.filter(item => item.teacher?._id.toString() === teacherId);
+        const page = parseInt(searchParams.get("page")) || 1;
+        const limitParam = searchParams.get("limit");
+        const isExport = limitParam === "all";
+        const limit = isExport ? 0 : parseInt(limitParam) || 10;
+        const skip = (page - 1) * limit;
+
+        const query = {};
+        if (teacherId) query.teacher = teacherId;
+
+        if (isExport) {
+            const data = await Attendance.find(query)
+                .populate("teacher", "name")
+                .populate("studentsTaught.student", "name subject material")
+                .sort({ date: -1, createdAt: -1 });
+            
+            return NextResponse.json(data);
         }
 
-        return NextResponse.json(filteredData);
+        const [data, total] = await Promise.all([
+            Attendance.find(query)
+                .populate("teacher", "name")
+                .populate("studentsTaught.student", "name subject material")
+                .sort({ date: -1, createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            Attendance.countDocuments(query)
+        ]);
+
+        return NextResponse.json({
+            data,
+            totalPages: Math.ceil(total / limit),
+            currentPage: page,
+            totalItems: total
+        });
     } catch (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

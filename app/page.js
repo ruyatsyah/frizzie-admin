@@ -1,19 +1,27 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import useSWR from "swr";
+import fetcher from "@/lib/fetcher";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [mounted, setMounted] = useState(false);
-  const [stats, setStats] = useState({
+
+  // SWR for Admin Stats
+  const { data: adminData, isLoading: adminLoading } = useSWR(
+    mounted && user?.role === "admin" ? "/api/dashboard" : null,
+    fetcher
+  );
+  
+  const stats = adminData || {
     students: 0,
     teachers: 0,
     unpaidBillings: 0,
     unpaidSalaries: 0,
     totalIncome: 0,
     totalExpense: 0
-  });
-  const [loading, setLoading] = useState(true);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -26,28 +34,9 @@ export default function Dashboard() {
       }
     }
 
-    async function fetchStats() {
-      setLoading(true);
-      try {
-        const res = await fetch("/api/dashboard");
-        if (res.ok) {
-          const data = await res.json();
-          setStats(data);
-        }
-      } catch (e) {
-        console.error("Failed to fetch dashboard stats", e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchStats();
   }, []);
 
-  if (!mounted) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #5A57DA', borderRadius: '50%' }}></div>
-    </div>
-  );
+  if (!mounted) return null;
 
   if (!user) return null;
 
@@ -103,7 +92,7 @@ export default function Dashboard() {
             </div>
             <p style={{ fontSize: '14px', color: 'var(--text-light)', marginBottom: '4px' }}>Tagihan Pelunasan</p>
             <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-dark)' }}>
-                {loading ? <span className="skeleton" style={{ display: 'inline-block', width: '150px', height: '32px' }}></span> : `Rp ${stats.totalIncome?.toLocaleString("id-ID")}`}
+                {adminLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '150px', height: '32px' }}></span> : `Rp ${stats.totalIncome?.toLocaleString("id-ID")}`}
             </p>
           </div>
 
@@ -117,7 +106,7 @@ export default function Dashboard() {
             </div>
             <p style={{ fontSize: '14px', color: 'var(--text-light)', marginBottom: '4px' }}>Beban Gaji Dibayar</p>
             <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-dark)' }}>
-                {loading ? <span className="skeleton" style={{ display: 'inline-block', width: '150px', height: '32px' }}></span> : `Rp ${stats.totalExpense?.toLocaleString("id-ID")}`}
+                {adminLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '150px', height: '32px' }}></span> : `Rp ${stats.totalExpense?.toLocaleString("id-ID")}`}
             </p>
           </div>
 
@@ -130,7 +119,9 @@ export default function Dashboard() {
               </div>
             </div>
             <p style={{ fontSize: '14px', color: 'var(--text-light)', marginBottom: '4px' }}>Estimasi Kas Aktif</p>
-            <p style={{ fontSize: '28px', fontWeight: 800, color: 'var(--primary)' }}>Rp {((stats.totalIncome || 0) - (stats.totalExpense || 0)).toLocaleString("id-ID")}</p>
+            <p style={{ fontSize: '28px', fontWeight: 800, color: 'var(--primary)' }}>
+                {adminLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '150px', height: '32px' }}></span> : `Rp ${((stats.totalIncome || 0) - (stats.totalExpense || 0)).toLocaleString("id-ID")}`}
+            </p>
           </div>
         </div>
       </div>
@@ -151,7 +142,9 @@ export default function Dashboard() {
               </div>
               <div>
                 <p style={{ color: 'var(--text-light)', fontSize: '13px', fontWeight: 500 }}>Siswa Aktif</p>
-                <p style={{ fontSize: '24px', fontWeight: 700 }}>{stats.students}</p>
+                <p style={{ fontSize: '24px', fontWeight: 700 }}>
+                    {adminLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '40px', height: '24px' }}></span> : stats.students}
+                </p>
               </div>
             </div>
           </div>
@@ -164,7 +157,9 @@ export default function Dashboard() {
               </div>
               <div>
                 <p style={{ color: 'var(--text-light)', fontSize: '13px', fontWeight: 500 }}>Guru / Mentor</p>
-                <p style={{ fontSize: '24px', fontWeight: 700 }}>{stats.teachers}</p>
+                <p style={{ fontSize: '24px', fontWeight: 700 }}>
+                    {adminLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '40px', height: '24px' }}></span> : stats.teachers}
+                </p>
               </div>
             </div>
           </div>
@@ -177,7 +172,9 @@ export default function Dashboard() {
               </div>
               <div>
                 <p style={{ color: 'var(--text-light)', fontSize: '13px', fontWeight: 500 }}>Tagihan Pending</p>
-                <p style={{ fontSize: '24px', fontWeight: 700, color: 'var(--warning)' }}>{stats.unpaidBillings}</p>
+                <p style={{ fontSize: '24px', fontWeight: 700, color: 'var(--warning)' }}>
+                    {adminLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '40px', height: '24px' }}></span> : stats.unpaidBillings}
+                </p>
               </div>
             </div>
           </div>
@@ -190,11 +187,11 @@ export default function Dashboard() {
               </div>
               <div>
                 <p style={{ color: 'var(--text-light)', fontSize: '13px', fontWeight: 500 }}>Gaji Pending</p>
-                  {stats.unpaidSalaries === 0 && !loading ? (
+                  {stats.unpaidSalaries === 0 && !adminLoading ? (
                     <p style={{ fontSize: '24px', fontWeight: 700, color: 'var(--success)' }}>0</p>
                   ) : (
                     <p style={{ fontSize: '24px', fontWeight: 700, color: 'var(--danger)' }}>
-                        {loading ? <span className="skeleton" style={{ display: 'inline-block', width: '40px', height: '24px' }}></span> : stats.unpaidSalaries}
+                        {adminLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '40px', height: '24px' }}></span> : stats.unpaidSalaries}
                     </p>
                   )}
               </div>
@@ -207,96 +204,19 @@ export default function Dashboard() {
 }
 
 function TeacherDashboard({ user }) {
-    const [stats, setStats] = useState({ cpCount: 0, sessionsThisMonth: 0 });
-    const [recentCP, setRecentCP] = useState([]);
-    const [pendingTasks, setPendingTasks] = useState([]);
-    const [salaries, setSalaries] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const tId = user?.teacherId || user?.id;
+    const { data: teacherData, isLoading: teacherLoading } = useSWR(
+        tId ? `/api/teacher/dashboard?teacherId=${tId}` : null,
+        fetcher
+    );
 
-    useEffect(() => {
-        async function fetchTeacherData() {
-            setLoading(true);
-            try {
-                const tId = user.teacherId || user.id;
-                const res = await fetch(`/api/teacher/dashboard?teacherId=${tId}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setStats(data.stats);
-                    setRecentCP(data.recentCP);
-                    setPendingTasks(data.pendingTasks || []);
-                    setSalaries(data.salaries || []);
-                }
-            } catch (e) {
-                console.error("Failed to fetch teacher dashboard data", e);
-            } finally {
-                setLoading(false);
-            }
-        }
-        if (user.teacherId || user.id) fetchTeacherData();
-    }, [user.teacherId, user.id]);
+    const stats = teacherData?.stats || { cpCount: 0, sessionsThisMonth: 0 };
+    const recentCP = teacherData?.recentCP || [];
+    const pendingTasks = teacherData?.pendingTasks || [];
+    const salaries = teacherData?.salaries || [];
 
     return (
         <div className="dashboard-container teacher-dashboard">
-            <style jsx>{`
-                .teacher-dashboard {
-                    padding: 20px;
-                    max-width: 1200px;
-                    margin: 0 auto;
-                }
-                .teacher-banner {
-                    margin-bottom: 24px;
-                    background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
-                    border-radius: 16px;
-                    padding: 32px;
-                    color: white;
-                    position: relative;
-                    overflow: hidden;
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                }
-                .teacher-stats-grid {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 16px;
-                    margin-bottom: 24px;
-                }
-                .teacher-main-grid {
-                    display: grid;
-                    grid-template-columns: 1fr;
-                    gap: 24px;
-                }
-                
-                @media (max-width: 768px) {
-                    .teacher-dashboard {
-                        padding: 16px 12px;
-                    }
-                    .teacher-banner {
-                        padding: 24px 20px;
-                        margin-bottom: 20px;
-                    }
-                    .teacher-stats-grid {
-                        grid-template-columns: 1fr;
-                        gap: 12px;
-                        margin-bottom: 20px;
-                    }
-                    .teacher-main-grid {
-                        grid-template-columns: 1fr;
-                        gap: 16px;
-                    }
-                    .teacher-banner h1 {
-                        font-size: 1.4rem !important;
-                        margin-bottom: 6px !important;
-                    }
-                    .teacher-banner p {
-                        font-size: 13px !important;
-                    }
-                    .teacher-stats-grid .card {
-                        padding: 20px !important;
-                    }
-                    .teacher-stats-grid .card p:nth-child(2) {
-                        font-size: 28px !important;
-                    }
-                }
-            `}</style>
             
             <div className="teacher-banner">
                 <div style={{ position: 'relative', zIndex: 1 }}>
@@ -322,7 +242,7 @@ function TeacherDashboard({ user }) {
                     <div style={{ position: 'relative', zIndex: 1 }}>
                         <p style={{ color: 'var(--text-light)', fontSize: '11px', fontWeight: 600, marginBottom: '4px', letterSpacing: '0.05em' }}>CAPAIAN PEMBELAJARAN (CP)</p>
                         <p style={{ fontSize: '32px', fontWeight: 800, color: 'var(--primary)' }}>
-                            {loading ? <span className="skeleton" style={{ display: 'inline-block', width: '60px', height: '32px' }}></span> : stats.cpCount}
+                            {teacherLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '60px', height: '32px' }}></span> : stats.cpCount}
                         </p>
                         <p style={{ fontSize: '12px', color: 'var(--text-light)', marginTop: '4px' }}>Total evaluasi tersimpan</p>
                     </div>
@@ -334,7 +254,7 @@ function TeacherDashboard({ user }) {
                     <div style={{ position: 'relative', zIndex: 1 }}>
                         <p style={{ color: 'var(--text-light)', fontSize: '11px', fontWeight: 600, marginBottom: '4px', letterSpacing: '0.05em' }}>SESI BULAN INI</p>
                         <p style={{ fontSize: '32px', fontWeight: 800, color: 'var(--success)' }}>
-                            {loading ? <span className="skeleton" style={{ display: 'inline-block', width: '60px', height: '32px' }}></span> : stats.sessionsThisMonth}
+                            {teacherLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '60px', height: '32px' }}></span> : stats.sessionsThisMonth}
                         </p>
                         <p style={{ fontSize: '12px', color: 'var(--text-light)', marginTop: '4px' }}>Total kehadiran mengajar</p>
                     </div>
@@ -354,7 +274,7 @@ function TeacherDashboard({ user }) {
                         {pendingTasks.length > 0 && <span style={{ fontSize: '12px', background: '#fee2e2', color: '#b91c1c', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>{pendingTasks.length} Tertunda</span>}
                     </div>
                     
-                    {loading ? (
+                    {teacherLoading ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             {[1, 2, 3].map(i => (
                                 <div key={i} className="skeleton" style={{ height: '60px', borderRadius: '10px' }}></div>
@@ -367,9 +287,9 @@ function TeacherDashboard({ user }) {
                             {pendingTasks.slice(0, 5).map((task, i) => (
                                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'white', borderRadius: '10px', border: '1px solid #fee2e2' }}>
                                     <div>
-                                        <p style={{ fontWeight: 700, fontSize: '14px', marginBottom: '2px' }}>{task.student?.name}</p>
+                                        <p style={{ fontWeight: 700, fontSize: '14px', marginBottom: '2px' }}>{task.student?.name || 'Murid Tidak Dikenal'}</p>
                                         <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>
-                                            {task.subject} • {new Date(task.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' })}
+                                            {task.subject} • {task.date ? new Date(task.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' }) : 'Tanggal tidak tersedia'}
                                         </p>
                                     </div>
                                     <Link href={`/learning-outcomes?sessionId=${task.sessionId}&studentId=${task.student?._id}`} className="btn-primary" style={{ fontSize: '11px', padding: '6px 12px', borderRadius: '8px', backgroundColor: '#5A57DA', textDecoration: 'none' }}>

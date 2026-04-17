@@ -1,73 +1,58 @@
 "use client";
 import { useEffect, useState } from "react";
+import useSWR, { mutate } from "swr";
+import fetcher from "@/lib/fetcher";
 import { showToast } from "@/components/Toast";
 import ConfirmModal from "@/components/ConfirmModal";
 
 export default function BillingsPage() {
-    const [billings, setBillings] = useState([]);
-    const [students, setStudents] = useState([]);
+    const [page, setPage] = useState(1);
+    const [mounted, setMounted] = useState(false);
     const [formData, setFormData] = useState({ student: "", amount: "", monthYear: "", sessions: 0, status: "Belum Lunas" });
     const [editingId, setEditingId] = useState(null);
     const [printData, setPrintData] = useState(null);
     const [deleteId, setDeleteId] = useState(null);
 
+    // SWR for Billings
+    const apiUrl = `/api/billings?page=${page}&limit=10`;
+    const { data: swrData, isLoading: billingsLoading } = useSWR(mounted ? apiUrl : null, fetcher);
+    const billings = swrData?.data || [];
+    const totalPages = swrData?.totalPages || 1;
+
+    // SWR for Students (Dropdown)
+    const { data: students = [] } = useSWR(mounted ? "/api/students" : null, fetcher);
+
     useEffect(() => {
-        fetchBillings();
-        fetchStudents();
+        setMounted(true);
     }, []);
 
-    const fetchBillings = async () => {
-        try {
-            const res = await fetch("/api/billings");
-            const data = await res.json();
-            if (Array.isArray(data)) {
-                setBillings(data);
-            } else {
-                console.error("Data is not an array:", data);
-                setBillings([]);
-            }
-        } catch (e) {
-            console.error(e);
-            setBillings([]);
-        }
-    };
+    const refreshData = () => mutate(apiUrl);
 
-    const fetchStudents = async () => {
-        try {
-            const res = await fetch("/api/students");
-            const data = await res.json();
-            if (Array.isArray(data)) {
-                setStudents(data);
-            } else {
-                console.error("Data is not an array:", data);
-                setStudents([]);
-            }
-        } catch (e) {
-            console.error(e);
-            setStudents([]);
-        }
-    };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (editingId) {
-            await fetch(`/api/billings/${editingId}`, {
-                method: "PUT",
+        try {
+            const method = editingId ? "PUT" : "POST";
+            const url = editingId ? `/api/billings/${editingId}` : "/api/billings";
+            
+            const res = await fetch(url, {
+                method: method,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData),
             });
-            showToast("Data berhasil disimpan di edit!");
-            setEditingId(null);
-        } else {
-            await fetch("/api/billings", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
-            showToast("Success, tagihan tersimpan!");
+
+            if (res.ok) {
+                showToast(editingId ? "Data berhasil diperbarui!" : "Tagihan berhasil disimpan!");
+                setFormData({ student: "", amount: "", monthYear: "", sessions: 0, status: "Belum Lunas" });
+                setEditingId(null);
+                refreshData();
+            } else {
+                showToast("Gagal menyimpan data", "error");
+            }
+        } catch (e) {
+            showToast("Terjadi kesalahan sistem", "error");
         }
-        setFormData({ student: "", amount: "", monthYear: "", sessions: 0, status: "Belum Lunas" });
-        fetchBillings();
     };
 
     const handleEdit = (billing) => {
@@ -87,10 +72,14 @@ export default function BillingsPage() {
 
     const confirmDelete = async () => {
         if (!deleteId) return;
-        await fetch(`/api/billings/${deleteId}`, { method: "DELETE" });
-        showToast("Data berhasil dihapus!");
+        const res = await fetch(`/api/billings/${deleteId}`, { method: "DELETE" });
+        if (res.ok) {
+            showToast("Data berhasil dihapus!");
+            refreshData();
+        } else {
+            showToast("Gagal menghapus data", "error");
+        }
         setDeleteId(null);
-        fetchBillings();
     };
 
     const cancelEdit = () => {
@@ -104,6 +93,23 @@ export default function BillingsPage() {
             window.print();
         }, 100);
     };
+
+    if (!mounted) return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #5A57DA', borderRadius: '50%' }}></div>
+        </div>
+    );
+
+    const SkeletonRow = () => (
+        <tr>
+            <td><div className="skeleton" style={{ height: '20px', width: '150px' }}></div></td>
+            <td><div className="skeleton" style={{ height: '20px', width: '100px' }}></div></td>
+            <td><div className="skeleton" style={{ height: '20px', width: '80px' }}></div></td>
+            <td><div className="skeleton" style={{ height: '20px', width: '120px' }}></div></td>
+            <td><div className="skeleton" style={{ height: '28px', width: '80px', borderRadius: '6px' }}></div></td>
+            <td style={{ textAlign: "right" }}><div className="skeleton" style={{ height: '32px', width: '100px', marginLeft: 'auto' }}></div></td>
+        </tr>
+    );
 
     return (
         <div>
@@ -182,7 +188,17 @@ export default function BillingsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {Array.isArray(billings) && billings.map((billing) => (
+                            {billingsLoading ? (
+                                <>
+                                    <SkeletonRow />
+                                    <SkeletonRow />
+                                    <SkeletonRow />
+                                </>
+                            ) : billings.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" style={{ textAlign: "center", color: "var(--text-light)", padding: "32px" }}>Belum ada data tagihan.</td>
+                                </tr>
+                            ) : billings.map((billing) => (
                                 <tr key={billing._id}>
                                     <td style={{ fontWeight: 500 }}>{billing.student?.name || "Siswa Dihapus"}</td>
                                     <td>{billing.monthYear}</td>
@@ -213,13 +229,33 @@ export default function BillingsPage() {
                                     </td>
                                 </tr>
                             ))}
-                            {(!Array.isArray(billings) || billings.length === 0) && (
-                                <tr>
-                                    <td colSpan="6" style={{ textAlign: "center", color: "var(--text-light)", padding: "32px" }}>Belum ada data tagihan.</td>
-                                </tr>
-                            )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Pagination Controls */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', padding: '16px 0', borderTop: '1px solid #f1f5f9' }}>
+                    <div style={{ fontSize: '13px', color: 'var(--text-light)' }}>
+                        Halaman <strong>{page}</strong> dari <strong>{totalPages}</strong>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                            disabled={page <= 1 || billingsLoading}
+                            onClick={() => setPage(page - 1)}
+                            className="btn-outline"
+                            style={{ padding: '6px 16px', opacity: (page <= 1 || billingsLoading) ? 0.5 : 1 }}
+                        >
+                            Sebelumnya
+                        </button>
+                        <button 
+                            disabled={page >= totalPages || billingsLoading}
+                            onClick={() => setPage(page + 1)}
+                            className="btn-outline"
+                            style={{ padding: '6px 16px', opacity: (page >= totalPages || billingsLoading) ? 0.5 : 1 }}
+                        >
+                            Berikutnya
+                        </button>
+                    </div>
                 </div>
             </div>
 

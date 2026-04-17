@@ -246,7 +246,7 @@ export default function LearningOutcomesPage() {
     );
 
     return (
-        <div className="container ripple-effect">
+        <div className="ripple-effect">
             {/* Global style for printing moved to static css or handled via style tag */}
             <style dangerouslySetInnerHTML={{ __html: `
                 .print-area { display: none; }
@@ -336,162 +336,204 @@ export default function LearningOutcomesPage() {
                 </div>
             </div>
 
-            <div className="no-print">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h1 className="page-title">Rekap Capaian Pembelajaran</h1>
-                </div>
+            <div className="no-print" style={{ paddingBottom: '40px' }}>
+                <h1 className="page-title">Rekap Capaian Pembelajaran</h1>
 
                 {user?.role === 'admin' && (
                     <div className="card" style={{ marginBottom: '24px' }}>
-                        <h3>Filter & Evaluasi Belajar (Admin)</h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginTop: '16px' }}>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', fontWeight: 600 }}>Filter Murid</label>
-                                <select value={adminFilters.studentId} onChange={(e) => setAdminFilters({ ...adminFilters, studentId: e.target.value })}>
-                                    <option value="">Semua Murid</option>
-                                    {students.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                                </select>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
+                            <div style={{ backgroundColor: 'var(--primary)', color: 'white', padding: '8px', borderRadius: '10px', display: 'flex' }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 3H2l8 9v6l4 2v-8z"/></svg>
                             </div>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', fontWeight: 600 }}>Mulai Tanggal</label>
-                                <input type="date" value={adminFilters.startDate} onChange={(e) => setAdminFilters({ ...adminFilters, startDate: e.target.value })} />
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', fontWeight: 600 }}>Sampai Tanggal</label>
-                                <input type="date" value={adminFilters.endDate} onChange={(e) => setAdminFilters({ ...adminFilters, endDate: e.target.value })} />
-                            </div>
+                            <h3 style={{ margin: 0 }}>Filter & Manajemen Evaluasi</h3>
                         </div>
+                            
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>Pilih Nama Murid</label>
+                                    <select 
+                                        value={adminFilters.studentId} 
+                                        onChange={(e) => setAdminFilters({ ...adminFilters, studentId: e.target.value })}
+                                        style={{ height: '44px', borderRadius: '10px' }}
+                                    >
+                                        <option value="">-- Semua Murid --</option>
+                                        {students.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>Mulai Tanggal</label>
+                                    <input 
+                                        type="date" 
+                                        value={adminFilters.startDate} 
+                                        onChange={(e) => setAdminFilters({ ...adminFilters, startDate: e.target.value })} 
+                                        style={{ height: '44px', borderRadius: '10px' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>Sampai Tanggal</label>
+                                    <input 
+                                        type="date" 
+                                        value={adminFilters.endDate} 
+                                        onChange={(e) => setAdminFilters({ ...adminFilters, endDate: e.target.value })} 
+                                        style={{ height: '44px', borderRadius: '10px' }}
+                                    />
+                                </div>
+                            </div>
 
-                        {adminFilters.studentId && adminFilters.startDate && adminFilters.endDate && (
-                            <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                <div style={{ border: '1px solid var(--primary)', borderRadius: '12px', padding: '20px', backgroundColor: '#fdfdff' }}>
-                                    <h4 style={{ fontSize: '15px', borderBottom: '1px solid #eee', paddingBottom: '8px', marginBottom: '16px', color: 'var(--primary)' }}>Langkah 1: Isi Evaluasi Belajar Siswa</h4>
-                                    
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600 }}>1. Progres Belajar</label>
+                            {adminFilters.studentId && adminFilters.startDate && adminFilters.endDate && (
+                                <div style={{ marginTop: '32px', borderTop: '1px dashed #e2e8f0', paddingTop: '32px' }}>
+                                    <h4 style={{ fontSize: '15px', color: 'var(--primary)', fontWeight: 700, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ backgroundColor: '#EEF2FF', padding: '4px 10px', borderRadius: '20px', fontSize: '12px' }}>FORM EVALUASI</span>
+                                        Input Penilaian Perkembangan Siswa
+                                    </h4>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+                                        <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: '#1E293B' }}>
+                                                📈 PROGRES BELAJAR
+                                            </label>
                                             <textarea 
-                                                style={{ width: '100%', height: '80px', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' }}
+                                                style={{ width: '100%', height: '120px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', lineHeight: '1.6' }}
                                                 placeholder="Sebutkan kemajuan yang signifikan..."
                                                 value={evaluationData.progresBelajar}
                                                 onChange={(e) => setEvaluationData({ ...evaluationData, progresBelajar: e.target.value })}
                                             />
                                         </div>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600 }}>2. Kebutuhan yang harus ditingkatkan</label>
+                                        <div style={{ backgroundColor: '#FDF2F2', padding: '16px', borderRadius: '12px', border: '1px solid #FEE2E2' }}>
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: '#991B1B' }}>
+                                                🎯 KEBUTUHAN DITINGKATKAN
+                                            </label>
                                             <textarea 
-                                                style={{ width: '100%', height: '80px', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' }}
+                                                style={{ width: '100%', height: '120px', padding: '12px', borderRadius: '8px', border: '1px solid #FCA5A5', fontSize: '14px', lineHeight: '1.6' }}
                                                 placeholder="Area yang masih perlu bimbingan..."
                                                 value={evaluationData.kebutuhanDitingkatkan}
                                                 onChange={(e) => setEvaluationData({ ...evaluationData, kebutuhanDitingkatkan: e.target.value })}
                                             />
                                         </div>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600 }}>3. Saran dan Pengembangan Anak</label>
+                                        <div style={{ backgroundColor: '#F0FDF4', padding: '16px', borderRadius: '12px', border: '1px solid #DCFCE7' }}>
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: '#166534' }}>
+                                                💡 SARAN PENGEMBANGAN
+                                            </label>
                                             <textarea 
-                                                style={{ width: '100%', height: '80px', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' }}
-                                                placeholder="Langkah selanjutnya untuk orang tua/guru..."
+                                                style={{ width: '100%', height: '120px', padding: '12px', borderRadius: '8px', border: '1px solid #86EFAC', fontSize: '14px', lineHeight: '1.6' }}
+                                                placeholder="Langkah selanjutnya..."
                                                 value={evaluationData.saranPengembangan}
                                                 onChange={(e) => setEvaluationData({ ...evaluationData, saranPengembangan: e.target.value })}
                                             />
                                         </div>
                                     </div>
 
-                                    <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+                                    <div style={{ display: 'flex', gap: '12px', padding: '20px', borderTop: '1px solid #f1f5f9', backgroundColor: '#F8FAFC', borderRadius: '0 0 12px 12px' }}>
                                         <button 
                                             onClick={handleSaveEvaluation} 
                                             className="btn-primary" 
                                             disabled={isSavingEval}
-                                            style={{ backgroundColor: '#10b981' }}
+                                            style={{ backgroundColor: '#10b981', boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)', transition: 'all 0.2s' }}
                                         >
-                                            {isSavingEval ? "Menyimpan Pak..." : "💾 Simpan Evaluasi"}
+                                            {isSavingEval ? (
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <div className="animate-spin" style={{ width: '14px', height: '14px', border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%' }}></div>
+                                                    Menyimpan...
+                                                </span>
+                                            ) : "✅ Simpan Penilaian"}
                                         </button>
-                                        <button onClick={handlePrint} className="btn-primary" style={{ backgroundColor: '#5A57DA' }}>
-                                            🖨️ Cetak Laporan (PDF)
+                                        <button 
+                                            onClick={handlePrint} 
+                                            className="btn-primary" 
+                                            style={{ backgroundColor: '#5A57DA', boxShadow: '0 4px 6px -1px rgba(90, 87, 218, 0.2)', transition: 'all 0.2s' }}
+                                        >
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                                                Cetak Laporan Resmi
+                                            </span>
                                         </button>
                                     </div>
-                                </div>
 
-                                {/* Live Preview Section */}
-                                <div style={{ border: '1px dashed #cbd5e1', borderRadius: '12px', padding: '24px', backgroundColor: 'white' }}>
-                                    <h4 style={{ fontSize: '14px', color: '#64748b', marginBottom: '16px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.1em' }}>--- Pratinjau Laporan ---</h4>
-                                    
-                                    <div className="report-preview" style={{ padding: '20px', border: '1px solid #f1f5f9', borderRadius: '8px' }}>
-                                        <div className="kop-surat">
-                                            <h2 style={{ fontSize: '24px', fontWeight: 800 }}>FrizzieSmartClub</h2>
-                                            <p style={{ fontSize: '12px' }}>Kp. Bojong No.135 RT. 02/RW. 01 Sukamukti, Katapang</p>
+                                    {/* Premium Live Preview */}
+                                    <div style={{ marginTop: '40px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', borderLeft: '4px solid #94A3B8', paddingLeft: '16px' }}>
+                                            <h4 style={{ margin: 0, fontSize: '14px', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.1em' }}>PRATINJAU DOKUMEN DIGITAL</h4>
                                         </div>
-                                        <h3 style={{ textAlign: 'center', margin: '20px 0', fontSize: '18px' }}>LAPORAN CAPAIAN PEMBELAJARAN</h3>
                                         
-                                        <div style={{ marginBottom: '20px', fontSize: '14px', display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-                                            <div><strong>Siswa:</strong> {getSelectedStudentName()}</div>
-                                            <div style={{ textAlign: 'right' }}><strong>Periode:</strong> {adminFilters.startDate} - {adminFilters.endDate}</div>
-                                        </div>
-
-                                        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px', fontSize: '13px' }} border="1">
-                                            <thead>
-                                                <tr style={{ backgroundColor: '#f8fafc' }}>
-                                                    <th style={{ padding: '8px' }}>Tanggal</th>
-                                                    <th style={{ padding: '8px' }}>Mata Pelajaran / Materi</th>
-                                                    <th style={{ padding: '8px' }}>Capaian</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {list.length === 0 ? (
-                                                    <tr><td colSpan="3" style={{ padding: '20px', textAlign: 'center', color: '#94a3b8' }}>Tidak ada data CP dalam rentang waktu ini.</td></tr>
-                                                ) : list.map(item => (
-                                                    <tr key={item._id}>
-                                                        <td style={{ padding: '8px', whiteSpace: 'nowrap' }}>{new Date(item.date).toLocaleDateString("id-ID")}</td>
-                                                        <td style={{ padding: '8px' }}>
-                                                            <div style={{ fontWeight: 700 }}>{item.subject}</div>
-                                                            <div style={{ fontSize: '11px', color: '#64748b' }}>{item.material}</div>
-                                                        </td>
-                                                        <td style={{ padding: '8px' }}>{item.achievement}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-
-                                        <h4 style={{ marginBottom: '10px', fontSize: '15px', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>Evaluasi & Penilaian:</h4>
-                                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }} border="1">
-                                            <thead>
-                                                <tr style={{ backgroundColor: '#f8fafc' }}>
-                                                    <th style={{ padding: '8px', width: '35%', textAlign: 'left' }}>Aspek Penilaian</th>
-                                                    <th style={{ padding: '8px', textAlign: 'left' }}>Keterangan</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td style={{ padding: '8px', fontWeight: 600 }}>Progres Belajar</td>
-                                                    <td style={{ padding: '8px' }}>{evaluationData.progresBelajar || "-"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td style={{ padding: '8px', fontWeight: 600 }}>Kebutuhan yang harus ditingkatkan</td>
-                                                    <td style={{ padding: '8px' }}>{evaluationData.kebutuhanDitingkatkan || "-"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td style={{ padding: '8px', fontWeight: 600 }}>Saran dan Pengembangan Anak</td>
-                                                    <td style={{ padding: '8px' }}>{evaluationData.saranPengembangan || "-"}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-
-                                        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-                                            <div style={{ textAlign: 'center' }}>
-                                                <p style={{ fontSize: '13px' }}>Bandung, {new Date().toLocaleDateString("id-ID")}</p>
-                                                <div style={{ height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <img src="/signature-salma.png" alt="Signature" style={{ height: '60px', mixBlendMode: 'multiply' }} />
+                                        <div style={{ 
+                                            backgroundColor: '#f1f5f9', 
+                                            padding: '40px', 
+                                            borderRadius: '16px', 
+                                            display: 'flex', 
+                                            justifyContent: 'center',
+                                            boxShadow: 'inset 0 2px 4px 0 rgba(0,0,0,0.06)'
+                                        }}>
+                                            <div className="report-preview" style={{ 
+                                                backgroundColor: 'white', 
+                                                width: '100%',
+                                                maxWidth: '800px', 
+                                                padding: '50px', 
+                                                boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+                                                borderRadius: '2px',
+                                                fontFamily: '"Inter", sans-serif'
+                                            }}>
+                                                <div style={{ textAlign: 'center', borderBottom: '4px double #111', paddingBottom: '20px', marginBottom: '30px' }}>
+                                                    <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 800, color: '#5A57DA' }}>FrizzieSmartClub</h2>
+                                                    <p style={{ margin: '4px 0', fontSize: '12px', color: '#64748B', fontWeight: 500 }}>Education Center & Private Tutoring</p>
+                                                    <p style={{ margin: 0, fontSize: '11px', color: '#94A3B8' }}>Bandung, Jawa Barat, Indonesia</p>
                                                 </div>
-                                                <p style={{ fontSize: '13px' }}><strong>( Salma Rahmani, S.T. )</strong></p>
+                                                
+                                                <h3 style={{ textAlign: 'center', marginBottom: '30px', fontSize: '18px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>LAPORAN CAPAIAN PEMBELAJARAN</h3>
+                                                
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', marginBottom: '20px', fontSize: '13px', padding: '12px', backgroundColor: '#F8FAFC', borderRadius: '4px' }}>
+                                                    <div><span style={{ color: '#64748B' }}>Nama Murid:</span> <strong style={{ marginLeft: '8px' }}>{getSelectedStudentName()}</strong></div>
+                                                    <div style={{ textAlign: 'right' }}><span style={{ color: '#64748B' }}>Periode:</span> <strong style={{ marginLeft: '8px' }}>{adminFilters.startDate || '...'} s/d {adminFilters.endDate || '...'}</strong></div>
+                                                </div>
+
+                                                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '24px', fontSize: '12px' }} border="1">
+                                                    <thead>
+                                                        <tr style={{ backgroundColor: '#F8FAFC' }}>
+                                                            <th style={{ padding: '10px' }}>TANGGAL</th>
+                                                            <th style={{ padding: '10px', textAlign: 'left' }}>MATA PELAJARAN / MATERI</th>
+                                                            <th style={{ padding: '10px', textAlign: 'left' }}>CAPAIAN</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {list.length === 0 ? (
+                                                            <tr><td colSpan="3" style={{ padding: '30px', textAlign: 'center', color: '#94A3B8' }}>Belum ada data capaian.</td></tr>
+                                                        ) : list.map(item => (
+                                                            <tr key={item._id}>
+                                                                <td style={{ padding: '8px', textAlign: 'center' }}>{new Date(item.date).toLocaleDateString("id-ID")}</td>
+                                                                <td style={{ padding: '8px' }}>
+                                                                    <div style={{ fontWeight: 700 }}>{item.subject}</div>
+                                                                    <div style={{ color: '#64748B' }}>{item.material}</div>
+                                                                </td>
+                                                                <td style={{ padding: '8px' }}>{item.achievement}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+
+                                                <div style={{ border: '1px solid #111', padding: '20px', borderRadius: '4px' }}>
+                                                    <h4 style={{ margin: '0 0 12px', fontSize: '14px', borderBottom: '1px solid #eee', paddingBottom: '6px' }}>Hasil Evaluasi Akhir:</h4>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '12px' }}>
+                                                        <div><strong>• Progres:</strong> {evaluationData.progresBelajar || '-'}</div>
+                                                        <div><strong>• Kebutuhan:</strong> {evaluationData.kebutuhanDitingkatkan || '-'}</div>
+                                                        <div><strong>• Saran:</strong> {evaluationData.saranPengembangan || '-'}</div>
+                                                    </div>
+                                                </div>
+
+                                                <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'flex-end' }}>
+                                                    <div style={{ textAlign: 'center', width: '150px' }}>
+                                                        <p style={{ fontSize: '11px', marginBottom: '40px' }}>Bandung, {new Date().toLocaleDateString("id-ID")}</p>
+                                                        <p style={{ fontSize: '12px', fontWeight: 700 }}>Salma Rahmani, S.T.</p>
+                                                        <p style={{ fontSize: '10px', color: '#64748B' }}>Direktur FrizzieSmart</p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
                 )}
 
+                <div className="card" style={{ marginBottom: '24px' }}>
                     <div className="table-wrapper">
                         <table className="data-table">
                             <thead>
@@ -513,34 +555,31 @@ export default function LearningOutcomesPage() {
                                         <SkeletonRow />
                                     </>
                                 ) : list.length === 0 ? (
-                                    <tr><td colSpan="7" align="center">Belum ada rekap capaian.</td></tr>
+                                    <tr><td colSpan="6" align="center">Belum ada rekap capaian.</td></tr>
                                 ) : list.map((item) => (
                                     <tr key={item._id || `${item.sessionId}-${item.student?._id || 'unknown'}-${Math.random()}`}>
                                         <td>{new Date(item.date).toLocaleDateString("id-ID")}</td>
-                                        {user?.role === 'admin' && <td style={{ fontWeight: 600 }}>{item.teacher?.name}</td>}
-                                        <td style={{ fontWeight: 600, color: '#5A57DA' }}>{item.student?.name}</td>
+                                        {user?.role === 'admin' && <td style={{ fontWeight: 500 }}>{item.teacher?.name}</td>}
+                                        <td style={{ fontWeight: 500 }}>{item.student?.name}</td>
                                         <td>
                                             <div style={{ fontWeight: 600 }}>{item.subject}</div>
                                             <div style={{ fontSize: '11px', color: 'var(--text-light)' }}>{item.material || "Belum diisi"}</div>
                                         </td>
-                                        <td style={{ fontSize: '12px', fontStyle: 'italic', maxWidth: '300px' }}>
+                                        <td style={{ fontSize: '12px', maxWidth: '300px' }}>
                                             {item.achievement ? `"${item.achievement}"` : "-"}
                                         </td>
                                         {user?.role === 'teacher' && (
                                             <td>
-                                                <span style={{ 
-                                                    padding: '4px 8px', 
-                                                    borderRadius: '6px', 
-                                                    fontSize: '11px', 
-                                                    fontWeight: 700,
+                                                <span className="status-tag" style={{ 
                                                     backgroundColor: item.isCompleted ? '#dcfce7' : '#fee2e2',
-                                                    color: item.isCompleted ? '#166534' : '#991b1b'
+                                                    color: item.isCompleted ? '#166534' : '#991b1b',
+                                                    fontSize: '11px'
                                                 }}>
-                                                    {item.isCompleted ? "SUDAH" : "BELUM"}
+                                                    {item.isCompleted ? "SUDAH DIISI" : "BELUM DIISI"}
                                                 </span>
                                             </td>
                                         )}
-                                        <td style={{ textAlign: "right" }}>
+                                        <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                                             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                                                 <button 
                                                     onClick={() => handleEdit(item)} 
@@ -568,7 +607,7 @@ export default function LearningOutcomesPage() {
                     </div>
 
                     {/* Pagination Controls */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
                         <div style={{ fontSize: '13px', color: 'var(--text-light)' }}>
                             Halaman <strong>{page}</strong> dari <strong>{totalPages}</strong>
                         </div>
@@ -659,6 +698,19 @@ export default function LearningOutcomesPage() {
                     onCancel={() => setDeleteId(null)}
                 />
             )}
+            </div>
         </div>
+    );
+}
+
+function SkeletonRow() {
+    return (
+        <tr>
+            {Array(6).fill(0).map((_, i) => (
+                <td key={i} style={{ padding: '16px' }}>
+                    <div className="skeleton" style={{ height: '20px', width: i === 0 ? '80px' : '100%' }}></div>
+                </td>
+            ))}
+        </tr>
     );
 }
