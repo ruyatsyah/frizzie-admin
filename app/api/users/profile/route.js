@@ -51,7 +51,7 @@ export async function PUT(req) {
                 name: updatedUser.name,
                 email: updatedUser.email,
                 role: updatedUser.role,
-                teacherId: updatedUser.teacherId
+                teacherId: user.teacherId || updatedUser.teacherId
             }
         });
     } catch (error) {

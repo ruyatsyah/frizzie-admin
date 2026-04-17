@@ -44,11 +44,10 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
             const data = await res.json();
             if (res.ok) {
                 showToast("Profil berhasil diperbarui!");
-                // Update LocalStorage
-                const authData = JSON.parse(localStorage.getItem("frizzie_auth"));
-                authData.name = profileData.name;
-                authData.email = profileData.email;
-                localStorage.setItem("frizzie_auth", JSON.stringify(authData));
+                // Update LocalStorage with server response to ensure all IDs remain perfectly intact
+                if (data.user) {
+                    localStorage.setItem("frizzie_auth", JSON.stringify(data.user));
+                }
                 
                 setIsEditProfileOpen(false);
                 setShowDropdown(false);
