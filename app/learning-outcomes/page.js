@@ -13,6 +13,7 @@ const SUBJECTS = ["Matematika", "IPA", "IPS", "Bhs. Inggris", "Bhs. Indonesia", 
 
 export default function LearningOutcomesPage() {
     const [user, setUser] = useState(null);
+    const [mounted, setMounted] = useState(false);
     const [students, setStudents] = useState([]);
     const [page, setPage] = useState(1);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,13 +47,14 @@ export default function LearningOutcomesPage() {
         ? `/api/learning-outcomes?teacherId=${tId}&page=${page}&limit=10`
         : `/api/learning-outcomes?studentId=${adminFilters.studentId}&startDate=${adminFilters.startDate}&endDate=${adminFilters.endDate}&page=${page}&limit=10`;
 
-    const { data: swrData, error: swrError, isLoading: swrLoading } = useSWR(user ? swrKey : null, fetcher);
+    const { data: swrData, error: swrError, isLoading: swrLoading } = useSWR(mounted && user ? swrKey : null, fetcher);
     const list = swrData?.data || [];
     const totalPages = swrData?.totalPages || 1;
 
     const refreshData = () => mutate(swrKey);
 
     useEffect(() => {
+        setMounted(true);
         const authData = localStorage.getItem("frizzie_auth");
         if (authData) {
             const parsedUser = JSON.parse(authData);

@@ -4,18 +4,26 @@ import Link from "next/link";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
+  const [mounted, setMounted] = useState(false);
   const [stats, setStats] = useState({
     students: 0,
     teachers: 0,
     unpaidBillings: 0,
     unpaidSalaries: 0,
+    totalIncome: 0,
+    totalExpense: 0
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setMounted(true);
     const authData = localStorage.getItem("frizzie_auth");
     if (authData) {
-      setUser(JSON.parse(authData));
+      try {
+        setUser(JSON.parse(authData));
+      } catch (e) {
+        console.error("Auth parse error", e);
+      }
     }
 
     async function fetchStats() {
@@ -34,6 +42,12 @@ export default function Dashboard() {
     }
     fetchStats();
   }, []);
+
+  if (!mounted) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #5A57DA', borderRadius: '50%' }}></div>
+    </div>
+  );
 
   if (!user) return null;
 

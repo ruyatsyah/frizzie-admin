@@ -30,18 +30,20 @@ export default function AttendancePage() {
     
     const [user, setUser] = useState(null);
     const [page, setPage] = useState(1);
+    const [mounted, setMounted] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
     const [editingId, setEditingId] = useState(null);
 
     // Filter based on role if teacher
     const apiUrl = `/api/attendance?page=${page}&limit=10`;
-    const { data: swrData, error: swrError, isLoading: swrLoading } = useSWR(apiUrl, fetcher);
+    const { data: swrData, error: swrError, isLoading: swrLoading } = useSWR(mounted && user ? apiUrl : null, fetcher);
     
     // Derived state for easier mapping
     const attendanceList = swrData?.data || [];
     const totalPages = swrData?.totalPages || 1;
 
     useEffect(() => {
+        setMounted(true);
         const authData = localStorage.getItem("frizzie_auth");
         if (authData) {
             const parsedUser = JSON.parse(authData);
