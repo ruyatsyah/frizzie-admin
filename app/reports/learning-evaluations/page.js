@@ -192,30 +192,35 @@ export default function ManageEvaluationsPage() {
             </div>
 
             <div className="no-print" style={{ paddingBottom: '40px' }}>
-                <h1 className="page-title">Manajemen Evaluasi Pembelajaran</h1>
-                
-                <div className="card" style={{ marginBottom: '24px' }}>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                        <input 
-                            type="text" 
-                            placeholder="Cari Nama Murid..." 
-                            value={search} 
-                            onChange={(e) => setSearch(e.target.value)}
-                            style={{ border: 'none', outline: 'none', width: '100%', fontSize: '14px' }}
-                        />
+                <div className="card" style={{ padding: 0, overflow: 'hidden', borderRadius: '16px', border: '1px solid var(--border)', backgroundColor: 'white' }}>
+                    {/* Card Header: Title + Search */}
+                    <div style={{ backgroundColor: 'white', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap', borderBottom: '1px solid var(--border)', marginBottom: '8px' }}>
+                        <h3 style={{ margin: 0, fontSize: '15.5px', fontWeight: 800, color: '#2D3748', letterSpacing: '-0.01em' }}>
+                            Manajemen Evaluasi Pembelajaran
+                        </h3>
+                        <div style={{ position: 'relative', minWidth: '240px', maxWidth: '320px', flex: 1 }}>
+                            <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', display: 'flex', pointerEvents: 'none' }}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Cari nama murid..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                style={{ paddingLeft: '38px', height: '38px', borderRadius: '8px', border: '1px solid var(--border)', width: '100%', fontSize: '13px', outline: 'none', backgroundColor: '#F9FAFB' }}
+                            />
+                        </div>
                     </div>
-                </div>
 
-                <div className="card" style={{ marginBottom: '24px' }}>
-                    <div className="table-wrapper">
-                        <table className="data-table">
+                    {/* Table */}
+                    <div className="table-wrapper" style={{ margin: 0, padding: '0 24px 12px 24px' }}>
+                        <table className="data-table" style={{ border: 'none', borderCollapse: 'collapse', margin: 0, width: '100%' }}>
                             <thead>
                                 <tr>
-                                    <th>Tanggal Input</th>
-                                    <th>Nama Murid</th>
-                                    <th>Periode Belajar</th>
-                                    <th style={{ textAlign: 'center' }}>Aksi</th>
+                                    <th style={{ padding: '12px 16px' }}>Tanggal Input</th>
+                                    <th style={{ padding: '12px 16px' }}>Nama Murid</th>
+                                    <th style={{ padding: '12px 16px' }}>Periode Belajar</th>
+                                    <th style={{ padding: '12px 24px 12px 16px', textAlign: 'right' }}>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -226,16 +231,16 @@ export default function ManageEvaluationsPage() {
                                         <SkeletonRow />
                                     </>
                                 ) : filteredEvals.length === 0 ? (
-                                    <tr><td colSpan="4" align="center">Tidak ada data evaluasi.</td></tr>
+                                    <tr><td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-light)', padding: '32px' }}>Tidak ada data evaluasi.</td></tr>
                                 ) : filteredEvals.map((ev) => (
                                     <tr key={ev._id}>
-                                        <td>{ev.createdAt ? new Date(ev.createdAt).toLocaleString("id-ID") : "-"}</td>
-                                        <td style={{ fontWeight: 600, color: 'var(--primary)' }}>{ev.student?.name || "Murid tidak ditemukan"}</td>
-                                        <td style={{ fontSize: '13px' }}>
+                                        <td style={{ verticalAlign: 'middle', padding: '8px 16px' }}>{ev.createdAt ? new Date(ev.createdAt).toLocaleString("id-ID") : "-"}</td>
+                                        <td style={{ fontWeight: 600, color: 'var(--primary)', verticalAlign: 'middle', padding: '8px 16px' }}>{ev.student?.name || "Murid tidak ditemukan"}</td>
+                                        <td style={{ fontSize: '13px', verticalAlign: 'middle', padding: '8px 16px' }}>
                                             {ev.startDate ? new Date(ev.startDate).toLocaleDateString("id-ID") : "-"} s/d {ev.endDate ? new Date(ev.endDate).toLocaleDateString("id-ID") : "-"}
                                         </td>
-                                        <td>
-                                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                        <td style={{ verticalAlign: 'middle', padding: '8px 24px 8px 16px', textAlign: 'right' }}>
+                                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                                                 <button onClick={() => handlePrint(ev)} className="btn-action" style={{ color: '#5A57DA' }} title="Cetak PDF">
                                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
                                                 </button>
@@ -253,27 +258,27 @@ export default function ManageEvaluationsPage() {
                         </table>
                     </div>
 
-                    {/* Pagination Controls */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', padding: '16px 0', borderTop: '1px solid #f1f5f9' }}>
-                        <div style={{ fontSize: '13px', color: 'var(--text-light)' }}>
+                    {/* Pagination */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', backgroundColor: 'white', borderTop: '1px solid #E2E8F0' }}>
+                        <div style={{ fontSize: '13px', color: '#64748B' }}>
                             Halaman <strong>{page}</strong> dari <strong>{totalPages}</strong>
                         </div>
                         <div style={{ display: 'flex', gap: '8px' }}>
-                            <button 
+                            <button
                                 disabled={page <= 1 || loading}
                                 onClick={() => setPage(page - 1)}
                                 className="btn-outline"
-                                style={{ padding: '6px 16px', opacity: (page <= 1 || loading) ? 0.5 : 1 }}
+                                style={{ padding: '6px 12px', opacity: (page <= 1 || loading) ? 0.5 : 1, fontSize: '13px', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                             >
-                                Sebelumnya
+                                Prev
                             </button>
-                            <button 
+                            <button
                                 disabled={page >= totalPages || loading}
                                 onClick={() => setPage(page + 1)}
                                 className="btn-outline"
-                                style={{ padding: '6px 16px', opacity: (page >= totalPages || loading) ? 0.5 : 1 }}
+                                style={{ padding: '6px 12px', opacity: (page >= totalPages || loading) ? 0.5 : 1, fontSize: '13px', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                             >
-                                Berikutnya
+                                Next
                             </button>
                         </div>
                     </div>
@@ -344,6 +349,11 @@ export default function ManageEvaluationsPage() {
             )}
 
 
+            <style jsx>{`
+                .row-hover:hover {
+                    background-color: #F8FAFC !important;
+                }
+            `}</style>
         </div>
     );
 }

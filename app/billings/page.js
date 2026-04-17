@@ -4,12 +4,14 @@ import useSWR, { mutate } from "swr";
 import fetcher from "@/lib/fetcher";
 import { showToast } from "@/components/Toast";
 import ConfirmModal from "@/components/ConfirmModal";
+import FormModal from "@/components/FormModal";
 
 export default function BillingsPage() {
     const [page, setPage] = useState(1);
     const [mounted, setMounted] = useState(false);
     const [formData, setFormData] = useState({ student: "", amount: "", monthYear: "", sessions: 0, status: "Belum Lunas" });
     const [editingId, setEditingId] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [printData, setPrintData] = useState(null);
     const [deleteId, setDeleteId] = useState(null);
 
@@ -19,8 +21,9 @@ export default function BillingsPage() {
     const billings = swrData?.data || [];
     const totalPages = swrData?.totalPages || 1;
 
-    // SWR for Students (Dropdown)
-    const { data: students = [] } = useSWR(mounted ? "/api/students" : null, fetcher);
+    // SWR for Students (Dropdown, get a lot to avoid missing)
+    const { data: swrStudents } = useSWR(mounted ? "/api/students?limit=1000" : null, fetcher);
+    const students = swrStudents?.data || [];
 
     useEffect(() => {
         setMounted(true);
@@ -44,8 +47,7 @@ export default function BillingsPage() {
 
             if (res.ok) {
                 showToast(editingId ? "Data berhasil diperbarui!" : "Tagihan berhasil disimpan!");
-                setFormData({ student: "", amount: "", monthYear: "", sessions: 0, status: "Belum Lunas" });
-                setEditingId(null);
+                resetForm();
                 refreshData();
             } else {
                 showToast("Gagal menyimpan data", "error");
@@ -53,6 +55,12 @@ export default function BillingsPage() {
         } catch (e) {
             showToast("Terjadi kesalahan sistem", "error");
         }
+    };
+
+    const resetForm = () => {
+        setFormData({ student: "", amount: "", monthYear: "", sessions: 0, status: "Belum Lunas" });
+        setEditingId(null);
+        setIsModalOpen(false);
     };
 
     const handleEdit = (billing) => {
@@ -64,6 +72,7 @@ export default function BillingsPage() {
             sessions: billing.sessions || 0,
             status: billing.status,
         });
+        setIsModalOpen(true);
     };
 
     const handleDelete = (id) => {
@@ -80,11 +89,6 @@ export default function BillingsPage() {
             showToast("Gagal menghapus data", "error");
         }
         setDeleteId(null);
-    };
-
-    const cancelEdit = () => {
-        setEditingId(null);
-        setFormData({ student: "", amount: "", monthYear: "", sessions: 0, status: "Belum Lunas" });
     };
 
     const handlePrint = (billing) => {
@@ -113,78 +117,33 @@ export default function BillingsPage() {
 
     return (
         <div>
-            <h1 className="page-title">Manajemen Tagihan Siswa</h1>
-
-            <div className="card no-print" style={{ marginBottom: "24px" }}>
-                <h3>{editingId ? "Edit Tagihan" : "Buat Tagihan Baru"}</h3>
-                <form onSubmit={handleSubmit} style={{ display: "flex", gap: "16px", marginTop: "16px", flexWrap: "wrap", alignItems: "center" }}>
-                    <select
-                        value={formData.student}
-                        onChange={(e) => setFormData({ ...formData, student: e.target.value })}
-                        required
-                        style={{ flex: 1, minWidth: "200px" }}
+            {/* Table Card */}
+            <div className="card no-print" style={{ padding: 0, overflow: 'hidden', borderRadius: '16px', border: '1px solid var(--border)', backgroundColor: 'white' }}>
+                {/* Card Title + Action Button */}
+                <div style={{ backgroundColor: 'white', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', marginBottom: '8px' }}>
+                    <h3 style={{ margin: 0, fontSize: '15.5px', fontWeight: 800, color: '#2D3748', letterSpacing: '-0.01em' }}>
+                        Manajemen Tagihan Siswa
+                    </h3>
+                    <button
+                        onClick={() => { resetForm(); setIsModalOpen(true); }}
+                        className="btn-primary"
+                        style={{ height: '38px', padding: '0 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 500 }}
                     >
-                        <option value="">Pilih Siswa</option>
-                        {Array.isArray(students) && students.map((s) => (
-                            <option key={s._id} value={s._id}>{s.name} - {s.grade}</option>
-                        ))}
-                    </select>
-                    <input
-                        type="number"
-                        placeholder="Jml Pertemuan"
-                        value={formData.sessions}
-                        onChange={(e) => setFormData({ ...formData, sessions: e.target.value })}
-                        required
-                        style={{ width: "130px" }}
-                    />
-                    <input
-                        type="number"
-                        placeholder="Jumlah Tagihan (Rp)"
-                        value={formData.amount}
-                        onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                        required
-                        style={{ flex: 1, minWidth: "150px" }}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Bulan & Tahun (Cth: Januari 2026)"
-                        value={formData.monthYear}
-                        onChange={(e) => setFormData({ ...formData, monthYear: e.target.value })}
-                        required
-                        style={{ flex: 1, minWidth: "180px" }}
-                    />
-                    <select
-                        value={formData.status}
-                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                        style={{ flex: 1, minWidth: "150px" }}
-                    >
-                        <option value="Belum Lunas">Belum Lunas</option>
-                        <option value="Lunas">Lunas</option>
-                    </select>
-                    <div style={{ display: "flex", gap: "8px" }}>
-                        <button type="submit" className="btn-primary" style={{ whiteSpace: "nowrap" }}>
-                            {editingId ? "Update Tagihan" : "Simpan Tagihan"}
-                        </button>
-                        {editingId && (
-                            <button type="button" className="btn-outline" onClick={cancelEdit}>
-                                Batal
-                            </button>
-                        )}
-                    </div>
-                </form>
-            </div>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+                        Tambah Tagihan
+                    </button>
+                </div>
 
-            <div className="card no-print">
-                <div className="table-wrapper">
-                    <table className="data-table">
+                <div className="table-wrapper" style={{ margin: 0, padding: '0 24px 12px 24px' }}>
+                    <table className="data-table" style={{ border: 'none', borderCollapse: 'collapse', margin: 0, width: '100%' }}>
                         <thead>
                             <tr>
-                                <th>Nama Siswa</th>
-                                <th>Bulan/Tahun</th>
-                                <th>Pertemuan</th>
-                                <th>Nominal</th>
-                                <th>Status</th>
-                                <th style={{ textAlign: "right" }}>Aksi</th>
+                                <th style={{ padding: '12px 16px' }}>Nama Siswa</th>
+                                <th style={{ padding: '12px 16px' }}>Bulan/Tahun</th>
+                                <th style={{ padding: '12px 16px' }}>Pertemuan</th>
+                                <th style={{ padding: '12px 16px' }}>Nominal</th>
+                                <th style={{ padding: '12px 16px' }}>Status</th>
+                                <th style={{ padding: '12px 24px 12px 16px', textAlign: 'right' }}>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -196,26 +155,25 @@ export default function BillingsPage() {
                                 </>
                             ) : billings.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" style={{ textAlign: "center", color: "var(--text-light)", padding: "32px" }}>Belum ada data tagihan.</td>
+                                    <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-light)', padding: '32px' }}>Belum ada data tagihan.</td>
                                 </tr>
                             ) : billings.map((billing) => (
                                 <tr key={billing._id}>
-                                    <td style={{ fontWeight: 500 }}>{billing.student?.name || "Siswa Dihapus"}</td>
-                                    <td>{billing.monthYear}</td>
-                                    <td>{billing.sessions || 0} <span style={{ color: "var(--text-light)", fontSize: "11px" }}>Kali</span></td>
-                                    <td style={{ fontWeight: 600 }}>Rp {billing.amount.toLocaleString("id-ID")}</td>
-                                    <td>
+                                    <td style={{ fontWeight: 600, color: 'var(--primary)', verticalAlign: 'middle', padding: '8px 16px' }}>{billing.student?.name || 'Siswa Dihapus'}</td>
+                                    <td style={{ verticalAlign: 'middle', padding: '8px 16px' }}>{billing.monthYear}</td>
+                                    <td style={{ verticalAlign: 'middle', padding: '8px 16px' }}>{billing.sessions || 0} <span style={{ color: 'var(--text-light)', fontSize: '11px' }}>Kali</span></td>
+                                    <td style={{ fontWeight: 600, verticalAlign: 'middle', padding: '8px 16px' }}>Rp {billing.amount.toLocaleString('id-ID')}</td>
+                                    <td style={{ verticalAlign: 'middle', padding: '8px 16px' }}>
                                         <span className="status-tag" style={{
-                                            backgroundColor: billing.status === 'Lunas' ? 'var(--success)' : 'var(--danger)',
-                                            color: 'white',
-                                            padding: "4px 10px",
-                                            borderRadius: "6px"
+                                            backgroundColor: billing.status === 'Lunas' ? '#dcfce7' : '#fee2e2',
+                                            color: billing.status === 'Lunas' ? '#166534' : '#991b1b',
+                                            fontSize: '11px'
                                         }}>
-                                            {billing.status}
+                                            {billing.status.toUpperCase()}
                                         </span>
                                     </td>
-                                    <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                                        <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                                    <td style={{ textAlign: 'right', whiteSpace: 'nowrap', verticalAlign: 'middle', padding: '8px 24px 8px 16px' }}>
+                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                                             <button onClick={() => handlePrint(billing)} className="btn-action" style={{ color: '#5A57DA' }} title="Cetak Kwitansi">
                                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
                                             </button>
@@ -234,30 +192,107 @@ export default function BillingsPage() {
                 </div>
 
                 {/* Pagination Controls */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', padding: '16px 0', borderTop: '1px solid #f1f5f9' }}>
-                    <div style={{ fontSize: '13px', color: 'var(--text-light)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', backgroundColor: 'white', borderTop: '1px solid #E2E8F0' }}>
+                    <div style={{ fontSize: '13px', color: '#64748B' }}>
                         Halaman <strong>{page}</strong> dari <strong>{totalPages}</strong>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                        <button 
+                        <button
                             disabled={page <= 1 || billingsLoading}
                             onClick={() => setPage(page - 1)}
                             className="btn-outline"
-                            style={{ padding: '6px 16px', opacity: (page <= 1 || billingsLoading) ? 0.5 : 1 }}
+                            style={{ padding: '6px 12px', opacity: (page <= 1 || billingsLoading) ? 0.5 : 1, fontSize: '13px', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                         >
-                            Sebelumnya
+                            Prev
                         </button>
-                        <button 
+                        <button
                             disabled={page >= totalPages || billingsLoading}
                             onClick={() => setPage(page + 1)}
                             className="btn-outline"
-                            style={{ padding: '6px 16px', opacity: (page >= totalPages || billingsLoading) ? 0.5 : 1 }}
+                            style={{ padding: '6px 12px', opacity: (page >= totalPages || billingsLoading) ? 0.5 : 1, fontSize: '13px', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                         >
-                            Berikutnya
+                            Next
                         </button>
                     </div>
                 </div>
             </div>
+
+            {/* Form Modal */}
+            <FormModal
+                isOpen={isModalOpen}
+                onClose={() => resetForm()}
+                title={editingId ? 'Edit Tagihan' : 'Tambah Tagihan Baru'}
+            >
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: '#475569' }}>Siswa</label>
+                            <select
+                                value={formData.student}
+                                onChange={(e) => setFormData({ ...formData, student: e.target.value })}
+                                required
+                                style={{ width: '100%' }}
+                            >
+                                <option value="">Pilih Siswa</option>
+                                {Array.isArray(students) && students.map((s) => (
+                                    <option key={s._id} value={s._id}>{s.name} - {s.grade}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: '#475569' }}>Bulan & Tahun</label>
+                            <input
+                                type="text"
+                                placeholder="Contoh: Januari 2026"
+                                value={formData.monthYear}
+                                onChange={(e) => setFormData({ ...formData, monthYear: e.target.value })}
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: '#475569' }}>Jumlah Tagihan (Rp)</label>
+                            <input
+                                type="number"
+                                placeholder="Contoh: 300000"
+                                value={formData.amount}
+                                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: '#475569' }}>Jumlah Pertemuan</label>
+                            <input
+                                type="number"
+                                placeholder="Contoh: 8"
+                                value={formData.sessions}
+                                onChange={(e) => setFormData({ ...formData, sessions: e.target.value })}
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: '#475569' }}>Status Pembayaran</label>
+                        <select
+                            value={formData.status}
+                            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                            style={{ width: '100%' }}
+                        >
+                            <option value="Belum Lunas">Belum Lunas</option>
+                            <option value="Lunas">Lunas</option>
+                        </select>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '12px', justifyContent: 'flex-end' }}>
+                        <button type="button" className="btn-outline" onClick={() => resetForm()} style={{ flex: 1 }}>
+                            Batal
+                        </button>
+                        <button type="submit" className="btn-primary" style={{ flex: 2 }}>
+                            {editingId ? 'Update Tagihan' : 'Simpan Tagihan'}
+                        </button>
+                    </div>
+                </form>
+            </FormModal>
 
             {/* Print View */}
             {printData && (

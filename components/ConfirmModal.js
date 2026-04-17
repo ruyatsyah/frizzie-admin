@@ -1,4 +1,6 @@
 "use client";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export default function ConfirmModal({ 
     title, 
@@ -9,7 +11,19 @@ export default function ConfirmModal({
     cancelText = "Batal",
     variant = "danger" 
 }) {
-    return (
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, []);
+
+    if (!mounted) return null;
+
+    const modalContent = (
         <div className="modal-overlay">
             <div className="modal-content">
                 <div className="modal-title">{title}</div>
@@ -27,4 +41,6 @@ export default function ConfirmModal({
             </div>
         </div>
     );
+
+    return createPortal(modalContent, document.body);
 }

@@ -283,6 +283,11 @@ h4 {
   border-bottom: 1px solid var(--border);
 }
 
+.data-table-compact th,
+.data-table-compact td {
+  padding: 12px 24px;
+}
+
 .data-table th {
   color: var(--text-light);
   font-weight: 500;
@@ -420,13 +425,14 @@ h4 {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
-  z-index: 9998;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 50000;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn 0.3s ease;
 }
 
 @keyframes fadeIn {
@@ -693,3 +699,5 @@ h4 {
     
     .card { border: none !important; box-shadow: none !important; padding: 0 !important; }
 }
+/* Override Tabel: Teks Hitam & Tidak Bold */
+.data-table th, .data-table td, .data-table th *, .data-table td *:not(button):not(svg):not(path):not(rect):not(circle):not(.status-tag) { color: #000000 !important; font-weight: 400 !important; }

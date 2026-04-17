@@ -74,60 +74,8 @@ export default function Dashboard() {
         }} />
       </div>
 
-      {/* Financial Section */}
-      <div style={{ marginBottom: '40px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-          <div style={{ width: '4px', height: '20px', background: 'var(--primary)', borderRadius: '2px' }} />
-          <h2 style={{ fontSize: '18px', fontWeight: 600 }}>Rekapitulasi Keuangan</h2>
-        </div>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
-          {/* Total Income */}
-          <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <span style={{ color: 'var(--text-light)', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Pendapatan</span>
-              <div style={{ padding: '8px', background: '#ecfdf5', borderRadius: '10px', color: 'var(--success)' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
-              </div>
-            </div>
-            <p style={{ fontSize: '14px', color: 'var(--text-light)', marginBottom: '4px' }}>Tagihan Pelunasan</p>
-            <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-dark)' }}>
-                {adminLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '150px', height: '32px' }}></span> : `Rp ${stats.totalIncome?.toLocaleString("id-ID")}`}
-            </p>
-          </div>
-
-          {/* Total Expense */}
-          <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <span style={{ color: 'var(--text-light)', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Pengeluaran</span>
-              <div style={{ padding: '8px', background: '#fef2f2', borderRadius: '10px', color: 'var(--danger)' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/><path d="M2 12h20"/><path d="m5 17-3-5 3-5"/><path d="m19 17 3-5-3-5"/></svg>
-              </div>
-            </div>
-            <p style={{ fontSize: '14px', color: 'var(--text-light)', marginBottom: '4px' }}>Beban Gaji Dibayar</p>
-            <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-dark)' }}>
-                {adminLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '150px', height: '32px' }}></span> : `Rp ${stats.totalExpense?.toLocaleString("id-ID")}`}
-            </p>
-          </div>
-
-          {/* Net Balance */}
-          <div className="card" style={{ background: 'var(--secondary)', borderColor: 'var(--primary)', borderWidth: '1px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <span style={{ color: 'var(--primary)', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Saldo Bersih</span>
-              <div style={{ padding: '8px', background: 'white', borderRadius: '10px', color: 'var(--primary)', boxShadow: 'var(--shadow-sm)' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              </div>
-            </div>
-            <p style={{ fontSize: '14px', color: 'var(--text-light)', marginBottom: '4px' }}>Estimasi Kas Aktif</p>
-            <p style={{ fontSize: '28px', fontWeight: 800, color: 'var(--primary)' }}>
-                {adminLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '150px', height: '32px' }}></span> : `Rp ${((stats.totalIncome || 0) - (stats.totalExpense || 0)).toLocaleString("id-ID")}`}
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Management Section */}
-      <div>
+      <div style={{ marginBottom: '40px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
           <div style={{ width: '4px', height: '20px', background: 'var(--success)', borderRadius: '2px' }} />
           <h2 style={{ fontSize: '18px', fontWeight: 600 }}>Manajemen Operasional</h2>
@@ -196,6 +144,58 @@ export default function Dashboard() {
                   )}
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Financial Section */}
+      <div style={{ marginBottom: '40px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+          <div style={{ width: '4px', height: '20px', background: 'var(--primary)', borderRadius: '2px' }} />
+          <h2 style={{ fontSize: '18px', fontWeight: 600 }}>Rekapitulasi Keuangan</h2>
+        </div>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+          {/* Total Income */}
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <span style={{ color: 'var(--text-light)', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Pendapatan</span>
+              <div style={{ padding: '8px', background: '#ecfdf5', borderRadius: '10px', color: 'var(--success)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+              </div>
+            </div>
+            <p style={{ fontSize: '14px', color: 'var(--text-light)', marginBottom: '4px' }}>Tagihan Pelunasan</p>
+            <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-dark)' }}>
+                {adminLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '150px', height: '32px' }}></span> : `Rp ${stats.totalIncome?.toLocaleString("id-ID")}`}
+            </p>
+          </div>
+
+          {/* Total Expense */}
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <span style={{ color: 'var(--text-light)', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Pengeluaran</span>
+              <div style={{ padding: '8px', background: '#fef2f2', borderRadius: '10px', color: 'var(--danger)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/><path d="M2 12h20"/><path d="m5 17-3-5 3-5"/><path d="m19 17 3-5-3-5"/></svg>
+              </div>
+            </div>
+            <p style={{ fontSize: '14px', color: 'var(--text-light)', marginBottom: '4px' }}>Beban Gaji Dibayar</p>
+            <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-dark)' }}>
+                {adminLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '150px', height: '32px' }}></span> : `Rp ${stats.totalExpense?.toLocaleString("id-ID")}`}
+            </p>
+          </div>
+
+          {/* Net Balance */}
+          <div className="card" style={{ background: 'var(--secondary)', borderColor: 'var(--primary)', borderWidth: '1px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <span style={{ color: 'var(--primary)', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Saldo Bersih</span>
+              <div style={{ padding: '8px', background: 'white', borderRadius: '10px', color: 'var(--primary)', boxShadow: 'var(--shadow-sm)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+            </div>
+            <p style={{ fontSize: '14px', color: 'var(--text-light)', marginBottom: '4px' }}>Estimasi Kas Aktif</p>
+            <p style={{ fontSize: '28px', fontWeight: 800, color: 'var(--primary)' }}>
+                {adminLoading ? <span className="skeleton" style={{ display: 'inline-block', width: '150px', height: '32px' }}></span> : `Rp ${((stats.totalIncome || 0) - (stats.totalExpense || 0)).toLocaleString("id-ID")}`}
+            </p>
           </div>
         </div>
       </div>

@@ -1,13 +1,28 @@
 "use client";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * FormModal component for larger forms (e.g. Attendance Input).
  * Includes smooth fade-in and slide-up animations.
+ * Uses React Portal to ensure full-screen overlay (covering Sidebar/Topbar).
  */
 export default function FormModal({ title, children, isOpen, onClose }) {
-    if (!isOpen) return null;
+    const [mounted, setMounted] = useState(false);
 
-    return (
+    useEffect(() => {
+        setMounted(true);
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
+    if (!isOpen || !mounted) return null;
+
+    const modalContent = (
         <div className="modal-overlay" onClick={onClose}>
             <div 
                 className="modal-content modal-content-lg fade-in-up" 
@@ -42,4 +57,6 @@ export default function FormModal({ title, children, isOpen, onClose }) {
             </div>
         </div>
     );
+
+    return createPortal(modalContent, document.body);
 }

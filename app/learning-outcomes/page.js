@@ -35,6 +35,7 @@ export default function LearningOutcomesPage() {
 
     const [formData, setFormData] = useState({
         student: "",
+        studentName: "",
         subject: "Matematika",
         material: "",
         achievement: "",
@@ -59,7 +60,9 @@ export default function LearningOutcomesPage() {
         if (authData) {
             const parsedUser = JSON.parse(authData);
             setUser(parsedUser);
-            fetchStudents();
+            if (parsedUser.role === 'admin') {
+                fetchStudents();
+            }
         }
     }, []);
 
@@ -138,8 +141,9 @@ export default function LearningOutcomesPage() {
 
     const fetchStudents = async () => {
         try {
-            const res = await fetch("/api/students");
-            setStudents(await res.json());
+            const res = await fetch("/api/students?limit=1000");
+            const data = await res.json();
+            setStudents(data.data || []);
         } catch (e) { console.error(e); }
     };
 
@@ -163,7 +167,7 @@ export default function LearningOutcomesPage() {
                 showToast(editingId ? "Capaian Berhasil Diperbarui!" : "Capaian Berhasil Disimpan!");
                 setIsModalOpen(false);
                 setEditingId(null);
-                setFormData({ ...formData, material: "", achievement: "" });
+                setFormData({ ...formData, material: "", achievement: "", studentName: "" });
                 refreshData();
             }
         } catch (e) { showToast("Gagal menyimpan", "error"); }
@@ -173,6 +177,7 @@ export default function LearningOutcomesPage() {
         setEditingId(item.isCompleted ? item._id : null);
         setFormData({
             student: item.student?._id || "",
+            studentName: item.student?.name || "",
             subject: item.subject,
             material: item.material || "",
             achievement: item.achievement || "",
@@ -337,217 +342,75 @@ export default function LearningOutcomesPage() {
             </div>
 
             <div className="no-print" style={{ paddingBottom: '40px' }}>
-                <h1 className="page-title">Rekap Capaian Pembelajaran</h1>
+                <div className="card" style={{ marginBottom: '24px', padding: 0, overflow: 'hidden', borderRadius: '16px', border: '1px solid var(--border)', backgroundColor: 'white' }}>
+                    {/* Card Header - Title Row */}
+                    <div style={{ backgroundColor: 'white', padding: '16px 24px', borderBottom: '1px solid var(--border)', marginBottom: '8px' }}>
+                        <h3 style={{ margin: 0, fontSize: '15.5px', fontWeight: 800, color: '#2D3748', letterSpacing: '-0.01em' }}>
+                            Rekap Capaian Pembelajaran
+                        </h3>
+                    </div>
 
-                {user?.role === 'admin' && (
-                    <div className="card" style={{ marginBottom: '24px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
-                            <div style={{ backgroundColor: 'var(--primary)', color: 'white', padding: '8px', borderRadius: '10px', display: 'flex' }}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 3H2l8 9v6l4 2v-8z"/></svg>
-                            </div>
-                            <h3 style={{ margin: 0 }}>Filter & Manajemen Evaluasi</h3>
-                        </div>
-                            
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>Pilih Nama Murid</label>
-                                    <select 
-                                        value={adminFilters.studentId} 
+                    {/* Filter Row - admin only */}
+                    {user?.role === 'admin' && (
+                        <div style={{ padding: '16px 24px', backgroundColor: 'white' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                                <div style={{ flex: '1.5', minWidth: '200px' }}>
+                                    <select
+                                        value={adminFilters.studentId}
                                         onChange={(e) => setAdminFilters({ ...adminFilters, studentId: e.target.value })}
-                                        style={{ height: '44px', borderRadius: '10px' }}
+                                        style={{ height: '38px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', width: '100%', backgroundColor: '#F9FAFB', fontWeight: 500 }}
                                     >
-                                        <option value="">-- Semua Murid --</option>
+                                        <option value="">Semua Murid</option>
                                         {students.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
                                     </select>
                                 </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>Mulai Tanggal</label>
-                                    <input 
-                                        type="date" 
-                                        value={adminFilters.startDate} 
-                                        onChange={(e) => setAdminFilters({ ...adminFilters, startDate: e.target.value })} 
-                                        style={{ height: '44px', borderRadius: '10px' }}
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <input
+                                        type="date"
+                                        value={adminFilters.startDate}
+                                        onChange={(e) => setAdminFilters({ ...adminFilters, startDate: e.target.value })}
+                                        style={{ height: '38px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', backgroundColor: '#F9FAFB', fontWeight: 500 }}
+                                    />
+                                    <span style={{ color: '#94A3B8', fontSize: '12px' }}>s/d</span>
+                                    <input
+                                        type="date"
+                                        value={adminFilters.endDate}
+                                        onChange={(e) => setAdminFilters({ ...adminFilters, endDate: e.target.value })}
+                                        style={{ height: '38px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', backgroundColor: '#F9FAFB', fontWeight: 500 }}
                                     />
                                 </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>Sampai Tanggal</label>
-                                    <input 
-                                        type="date" 
-                                        value={adminFilters.endDate} 
-                                        onChange={(e) => setAdminFilters({ ...adminFilters, endDate: e.target.value })} 
-                                        style={{ height: '44px', borderRadius: '10px' }}
-                                    />
-                                </div>
+
+                                <div style={{ flex: 1 }}></div>
+
+                                {adminFilters.studentId && adminFilters.startDate && adminFilters.endDate && (
+                                    <button
+                                        onClick={handlePrint}
+                                        className="btn-primary"
+                                        style={{ borderRadius: '8px', height: '38px', padding: '0 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 500, backgroundColor: '#5A57DA' }}
+                                    >
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                                        Cetak
+                                    </button>
+                                )}
                             </div>
-
-                            {adminFilters.studentId && adminFilters.startDate && adminFilters.endDate && (
-                                <div style={{ marginTop: '32px', borderTop: '1px dashed #e2e8f0', paddingTop: '32px' }}>
-                                    <h4 style={{ fontSize: '15px', color: 'var(--primary)', fontWeight: 700, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ backgroundColor: '#EEF2FF', padding: '4px 10px', borderRadius: '20px', fontSize: '12px' }}>FORM EVALUASI</span>
-                                        Input Penilaian Perkembangan Siswa
-                                    </h4>
-
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-                                        <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
-                                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: '#1E293B' }}>
-                                                📈 PROGRES BELAJAR
-                                            </label>
-                                            <textarea 
-                                                style={{ width: '100%', height: '120px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', lineHeight: '1.6' }}
-                                                placeholder="Sebutkan kemajuan yang signifikan..."
-                                                value={evaluationData.progresBelajar}
-                                                onChange={(e) => setEvaluationData({ ...evaluationData, progresBelajar: e.target.value })}
-                                            />
-                                        </div>
-                                        <div style={{ backgroundColor: '#FDF2F2', padding: '16px', borderRadius: '12px', border: '1px solid #FEE2E2' }}>
-                                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: '#991B1B' }}>
-                                                🎯 KEBUTUHAN DITINGKATKAN
-                                            </label>
-                                            <textarea 
-                                                style={{ width: '100%', height: '120px', padding: '12px', borderRadius: '8px', border: '1px solid #FCA5A5', fontSize: '14px', lineHeight: '1.6' }}
-                                                placeholder="Area yang masih perlu bimbingan..."
-                                                value={evaluationData.kebutuhanDitingkatkan}
-                                                onChange={(e) => setEvaluationData({ ...evaluationData, kebutuhanDitingkatkan: e.target.value })}
-                                            />
-                                        </div>
-                                        <div style={{ backgroundColor: '#F0FDF4', padding: '16px', borderRadius: '12px', border: '1px solid #DCFCE7' }}>
-                                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: '#166534' }}>
-                                                💡 SARAN PENGEMBANGAN
-                                            </label>
-                                            <textarea 
-                                                style={{ width: '100%', height: '120px', padding: '12px', borderRadius: '8px', border: '1px solid #86EFAC', fontSize: '14px', lineHeight: '1.6' }}
-                                                placeholder="Langkah selanjutnya..."
-                                                value={evaluationData.saranPengembangan}
-                                                onChange={(e) => setEvaluationData({ ...evaluationData, saranPengembangan: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div style={{ display: 'flex', gap: '12px', padding: '20px', borderTop: '1px solid #f1f5f9', backgroundColor: '#F8FAFC', borderRadius: '0 0 12px 12px' }}>
-                                        <button 
-                                            onClick={handleSaveEvaluation} 
-                                            className="btn-primary" 
-                                            disabled={isSavingEval}
-                                            style={{ backgroundColor: '#10b981', boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)', transition: 'all 0.2s' }}
-                                        >
-                                            {isSavingEval ? (
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <div className="animate-spin" style={{ width: '14px', height: '14px', border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%' }}></div>
-                                                    Menyimpan...
-                                                </span>
-                                            ) : "✅ Simpan Penilaian"}
-                                        </button>
-                                        <button 
-                                            onClick={handlePrint} 
-                                            className="btn-primary" 
-                                            style={{ backgroundColor: '#5A57DA', boxShadow: '0 4px 6px -1px rgba(90, 87, 218, 0.2)', transition: 'all 0.2s' }}
-                                        >
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-                                                Cetak Laporan Resmi
-                                            </span>
-                                        </button>
-                                    </div>
-
-                                    {/* Premium Live Preview */}
-                                    <div style={{ marginTop: '40px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', borderLeft: '4px solid #94A3B8', paddingLeft: '16px' }}>
-                                            <h4 style={{ margin: 0, fontSize: '14px', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.1em' }}>PRATINJAU DOKUMEN DIGITAL</h4>
-                                        </div>
-                                        
-                                        <div style={{ 
-                                            backgroundColor: '#f1f5f9', 
-                                            padding: '40px', 
-                                            borderRadius: '16px', 
-                                            display: 'flex', 
-                                            justifyContent: 'center',
-                                            boxShadow: 'inset 0 2px 4px 0 rgba(0,0,0,0.06)'
-                                        }}>
-                                            <div className="report-preview" style={{ 
-                                                backgroundColor: 'white', 
-                                                width: '100%',
-                                                maxWidth: '800px', 
-                                                padding: '50px', 
-                                                boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
-                                                borderRadius: '2px',
-                                                fontFamily: '"Inter", sans-serif'
-                                            }}>
-                                                <div style={{ textAlign: 'center', borderBottom: '4px double #111', paddingBottom: '20px', marginBottom: '30px' }}>
-                                                    <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 800, color: '#5A57DA' }}>FrizzieSmartClub</h2>
-                                                    <p style={{ margin: '4px 0', fontSize: '12px', color: '#64748B', fontWeight: 500 }}>Education Center & Private Tutoring</p>
-                                                    <p style={{ margin: 0, fontSize: '11px', color: '#94A3B8' }}>Bandung, Jawa Barat, Indonesia</p>
-                                                </div>
-                                                
-                                                <h3 style={{ textAlign: 'center', marginBottom: '30px', fontSize: '18px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>LAPORAN CAPAIAN PEMBELAJARAN</h3>
-                                                
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', marginBottom: '20px', fontSize: '13px', padding: '12px', backgroundColor: '#F8FAFC', borderRadius: '4px' }}>
-                                                    <div><span style={{ color: '#64748B' }}>Nama Murid:</span> <strong style={{ marginLeft: '8px' }}>{getSelectedStudentName()}</strong></div>
-                                                    <div style={{ textAlign: 'right' }}><span style={{ color: '#64748B' }}>Periode:</span> <strong style={{ marginLeft: '8px' }}>{adminFilters.startDate || '...'} s/d {adminFilters.endDate || '...'}</strong></div>
-                                                </div>
-
-                                                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '24px', fontSize: '12px' }} border="1">
-                                                    <thead>
-                                                        <tr style={{ backgroundColor: '#F8FAFC' }}>
-                                                            <th style={{ padding: '10px' }}>TANGGAL</th>
-                                                            <th style={{ padding: '10px', textAlign: 'left' }}>MATA PELAJARAN / MATERI</th>
-                                                            <th style={{ padding: '10px', textAlign: 'left' }}>CAPAIAN</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {list.length === 0 ? (
-                                                            <tr><td colSpan="3" style={{ padding: '30px', textAlign: 'center', color: '#94A3B8' }}>Belum ada data capaian.</td></tr>
-                                                        ) : list.map(item => (
-                                                            <tr key={item._id}>
-                                                                <td style={{ padding: '8px', textAlign: 'center' }}>{new Date(item.date).toLocaleDateString("id-ID")}</td>
-                                                                <td style={{ padding: '8px' }}>
-                                                                    <div style={{ fontWeight: 700 }}>{item.subject}</div>
-                                                                    <div style={{ color: '#64748B' }}>{item.material}</div>
-                                                                </td>
-                                                                <td style={{ padding: '8px' }}>{item.achievement}</td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-
-                                                <div style={{ border: '1px solid #111', padding: '20px', borderRadius: '4px' }}>
-                                                    <h4 style={{ margin: '0 0 12px', fontSize: '14px', borderBottom: '1px solid #eee', paddingBottom: '6px' }}>Hasil Evaluasi Akhir:</h4>
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '12px' }}>
-                                                        <div><strong>• Progres:</strong> {evaluationData.progresBelajar || '-'}</div>
-                                                        <div><strong>• Kebutuhan:</strong> {evaluationData.kebutuhanDitingkatkan || '-'}</div>
-                                                        <div><strong>• Saran:</strong> {evaluationData.saranPengembangan || '-'}</div>
-                                                    </div>
-                                                </div>
-
-                                                <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'flex-end' }}>
-                                                    <div style={{ textAlign: 'center', width: '150px' }}>
-                                                        <p style={{ fontSize: '11px', marginBottom: '40px' }}>Bandung, {new Date().toLocaleDateString("id-ID")}</p>
-                                                        <p style={{ fontSize: '12px', fontWeight: 700 }}>Salma Rahmani, S.T.</p>
-                                                        <p style={{ fontSize: '10px', color: '#64748B' }}>Direktur FrizzieSmart</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </div>
-                )}
+                    )}
 
-                <div className="card" style={{ marginBottom: '24px' }}>
-                    <div className="table-wrapper">
-                        <table className="data-table">
-                            <thead>
+                    <div className="table-wrapper no-mobile" style={{ margin: 0, padding: '0 24px 12px 24px' }}>
+                        <table className="data-table" style={{ border: 'none', borderCollapse: 'collapse' }}>
+                            <thead style={{ backgroundColor: '#F8FAFC', borderBottom: '2px solid #E2E8F0' }}>
                                 <tr>
-                                    <th>Tanggal</th>
-                                    {user?.role === 'admin' && <th>Guru</th>}
-                                    <th>Murid</th>
-                                    <th>Mata Pelajaran / Materi</th>
-                                    <th>Capaian</th>
-                                    {user?.role === 'teacher' && <th>Status</th>}
-                                    <th style={{ textAlign: "right" }}>Aksi</th>
+                                    <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TANGGAL</th>
+                                    {user?.role === 'admin' && <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>GURU</th>}
+                                    <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>NAMA MURID</th>
+                                    <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>MATA PELAJARAN / MATERI</th>
+                                    <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>CAPAIAN</th>
+                                    {user?.role === 'teacher' && <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>STATUS</th>}
+                                    <th style={{ textAlign: "right", verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AKSI</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="zebra-rows">
                                 {swrLoading ? (
                                     <>
                                         <SkeletonRow />
@@ -558,18 +421,18 @@ export default function LearningOutcomesPage() {
                                     <tr><td colSpan="6" align="center">Belum ada rekap capaian.</td></tr>
                                 ) : list.map((item) => (
                                     <tr key={item._id || `${item.sessionId}-${item.student?._id || 'unknown'}-${Math.random()}`}>
-                                        <td>{new Date(item.date).toLocaleDateString("id-ID")}</td>
-                                        {user?.role === 'admin' && <td style={{ fontWeight: 500 }}>{item.teacher?.name}</td>}
-                                        <td style={{ fontWeight: 500 }}>{item.student?.name}</td>
-                                        <td>
+                                        <td style={{ verticalAlign: 'middle', padding: '8px 16px' }}>{new Date(item.date).toLocaleDateString("id-ID")}</td>
+                                        {user?.role === 'admin' && <td style={{ fontWeight: 500, verticalAlign: 'middle', padding: '8px 16px' }}>{item.teacher?.name}</td>}
+                                        <td style={{ fontWeight: 500, verticalAlign: 'middle', padding: '8px 16px' }}>{item.student?.name}</td>
+                                        <td style={{ verticalAlign: 'middle', padding: '8px 16px' }}>
                                             <div style={{ fontWeight: 600 }}>{item.subject}</div>
                                             <div style={{ fontSize: '11px', color: 'var(--text-light)' }}>{item.material || "Belum diisi"}</div>
                                         </td>
-                                        <td style={{ fontSize: '12px', maxWidth: '300px' }}>
+                                        <td style={{ fontSize: '12px', maxWidth: '300px', verticalAlign: 'middle', padding: '8px 16px' }}>
                                             {item.achievement ? `"${item.achievement}"` : "-"}
                                         </td>
                                         {user?.role === 'teacher' && (
-                                            <td>
+                                            <td style={{ verticalAlign: 'middle', padding: '8px 16px' }}>
                                                 <span className="status-tag" style={{ 
                                                     backgroundColor: item.isCompleted ? '#dcfce7' : '#fee2e2',
                                                     color: item.isCompleted ? '#166534' : '#991b1b',
@@ -579,7 +442,7 @@ export default function LearningOutcomesPage() {
                                                 </span>
                                             </td>
                                         )}
-                                        <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                                        <td style={{ textAlign: "right", whiteSpace: "nowrap", verticalAlign: 'middle', padding: '8px 16px' }}>
                                             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                                                 <button 
                                                     onClick={() => handleEdit(item)} 
@@ -590,11 +453,16 @@ export default function LearningOutcomesPage() {
                                                     {item.isCompleted ? (
                                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
                                                     ) : (
-                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                                                     )}
                                                 </button>
                                                 {user?.role === 'admin' && (
-                                                    <button onClick={() => handleDelete(item._id)} className="btn-action" style={{ color: '#EF4444' }} title="Hapus">
+                                                    <button 
+                                                        onClick={() => { setDeleteId(item._id); setIsDeleteModalOpen(true); }} 
+                                                        className="btn-action" 
+                                                        style={{ color: '#EF4444' }} 
+                                                        title="Hapus"
+                                                    >
                                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                                                     </button>
                                                 )}
@@ -607,45 +475,117 @@ export default function LearningOutcomesPage() {
                     </div>
 
                     {/* Pagination Controls */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderTop: '1px solid #E2E8F0' }}>
                         <div style={{ fontSize: '13px', color: 'var(--text-light)' }}>
                             Halaman <strong>{page}</strong> dari <strong>{totalPages}</strong>
                         </div>
                         <div style={{ display: 'flex', gap: '8px' }}>
-                            <button 
+                            <button
                                 disabled={page <= 1 || swrLoading}
                                 onClick={() => setPage(page - 1)}
                                 className="btn-outline"
-                                style={{ padding: '6px 16px', opacity: (page <= 1 || swrLoading) ? 0.5 : 1 }}
+                                style={{ padding: '6px 16px', fontSize: '13px', opacity: (page <= 1 || swrLoading) ? 0.4 : 1 }}
                             >
-                                Sebelumnya
+                                Prev
                             </button>
-                            <button 
+                            <button
                                 disabled={page >= totalPages || swrLoading}
                                 onClick={() => setPage(page + 1)}
                                 className="btn-outline"
-                                style={{ padding: '6px 16px', opacity: (page >= totalPages || swrLoading) ? 0.5 : 1 }}
+                                style={{ padding: '6px 16px', fontSize: '13px', opacity: (page >= totalPages || swrLoading) ? 0.4 : 1 }}
                             >
-                                Selanjutnya
+                                Next
                             </button>
                         </div>
                     </div>
                 </div>
 
+                {/* Evaluation Form — appears below table when filters are filled (admin only) */}
+                {user?.role === 'admin' && adminFilters.studentId && adminFilters.startDate && adminFilters.endDate && (
+                    <div className="card" style={{ marginBottom: '24px', padding: 0, overflow: 'hidden' }}>
+                        <div style={{ backgroundColor: 'white', padding: '16px 24px', borderBottom: '1px solid var(--border)' }}>
+                            <h3 style={{ margin: 0, fontSize: '15.5px', fontWeight: 800, color: '#2D3748' }}>
+                                <span style={{ backgroundColor: '#EEF2FF', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', marginRight: '10px', color: 'var(--primary)' }}>FORM EVALUASI</span>
+                                Input Penilaian Perkembangan Siswa
+                            </h3>
+                        </div>
+                        <div style={{ padding: '24px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+                                <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: '#1E293B' }}>
+                                        📈 PROGRES BELAJAR
+                                    </label>
+                                    <textarea
+                                        style={{ width: '100%', height: '120px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', lineHeight: '1.6' }}
+                                        placeholder="Sebutkan kemajuan yang signifikan..."
+                                        value={evaluationData.progresBelajar}
+                                        onChange={(e) => setEvaluationData({ ...evaluationData, progresBelajar: e.target.value })}
+                                    />
+                                </div>
+                                <div style={{ backgroundColor: '#FDF2F2', padding: '16px', borderRadius: '12px', border: '1px solid #FEE2E2' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: '#991B1B' }}>
+                                        🎯 KEBUTUHAN DITINGKATKAN
+                                    </label>
+                                    <textarea
+                                        style={{ width: '100%', height: '120px', padding: '12px', borderRadius: '8px', border: '1px solid #FCA5A5', fontSize: '14px', lineHeight: '1.6' }}
+                                        placeholder="Area yang masih perlu bimbingan..."
+                                        value={evaluationData.kebutuhanDitingkatkan}
+                                        onChange={(e) => setEvaluationData({ ...evaluationData, kebutuhanDitingkatkan: e.target.value })}
+                                    />
+                                </div>
+                                <div style={{ backgroundColor: '#F0FDF4', padding: '16px', borderRadius: '12px', border: '1px solid #DCFCE7' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: '#166534' }}>
+                                        💡 SARAN PENGEMBANGAN
+                                    </label>
+                                    <textarea
+                                        style={{ width: '100%', height: '120px', padding: '12px', borderRadius: '8px', border: '1px solid #86EFAC', fontSize: '14px', lineHeight: '1.6' }}
+                                        placeholder="Langkah selanjutnya..."
+                                        value={evaluationData.saranPengembangan}
+                                        onChange={(e) => setEvaluationData({ ...evaluationData, saranPengembangan: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button
+                                    onClick={handleSaveEvaluation}
+                                    className="btn-primary"
+                                    disabled={isSavingEval}
+                                    style={{ backgroundColor: '#10b981', boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)', transition: 'all 0.2s' }}
+                                >
+                                    {isSavingEval ? (
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div className="animate-spin" style={{ width: '14px', height: '14px', border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%' }}></div>
+                                            Menyimpan...
+                                        </span>
+                                    ) : "✅ Simpan Penilaian"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             <FormModal isOpen={isModalOpen} onClose={closeFormModal} title={editingId ? "Edit Capaian Belajar Murid" : "Input Capaian Belajar Murid"}>
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div>
-                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', fontWeight: 600 }}>Pilih Murid</label>
-                        <select 
-                            required 
-                            disabled={!!formData.sessionId}
-                            value={formData.student} 
-                            onChange={(e) => setFormData({...formData, student: e.target.value})}
-                            style={{ backgroundColor: formData.sessionId ? '#f8fafc' : 'white' }}
-                        >
-                            <option value="">-- Pilih Murid --</option>
-                            {students.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                        </select>
+                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', fontWeight: 600 }}>Murid</label>
+                        {user?.role === 'admin' && !formData.sessionId ? (
+                            <select 
+                                required 
+                                value={formData.student} 
+                                onChange={(e) => setFormData({...formData, student: e.target.value})}
+                                style={{ backgroundColor: 'white' }}
+                            >
+                                <option value="">-- Pilih Murid --</option>
+                                {students.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                            </select>
+                        ) : (
+                            <input 
+                                type="text" 
+                                disabled 
+                                value={formData.studentName || 'Murid Tidak Dikenal'} 
+                                style={{ backgroundColor: '#f8fafc', color: '#64748B' }} 
+                            />
+                        )}
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         <div>
@@ -698,6 +638,14 @@ export default function LearningOutcomesPage() {
                     onCancel={() => setDeleteId(null)}
                 />
             )}
+            <style jsx>{`
+                tr {
+                    background-color: white !important;
+                }
+                tr:hover {
+                    background-color: #F8FAFC !important;
+                }
+            `}</style>
             </div>
         </div>
     );

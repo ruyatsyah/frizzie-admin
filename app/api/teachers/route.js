@@ -9,11 +9,32 @@ function hashPassword(password) {
     return crypto.createHash('sha256').update(password).digest('hex');
 }
 
-export async function GET() {
+export async function GET(req) {
     try {
         await dbConnect();
-        const data = await Teacher.find({}).sort({ createdAt: -1 });
-        return NextResponse.json(data);
+        const { searchParams } = new URL(req.url);
+        const page = parseInt(searchParams.get("page")) || 1;
+        const limit = parseInt(searchParams.get("limit")) || 10;
+        const search = searchParams.get("search") || "";
+
+        const query = {};
+        if (search) {
+            query.name = { $regex: search, $options: "i" };
+        }
+
+        const skip = (page - 1) * limit;
+        const total = await Teacher.countDocuments(query);
+        const data = await Teacher.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        return NextResponse.json({
+            data,
+            page,
+            total,
+            totalPages: Math.ceil(total / limit)
+        });
     } catch (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

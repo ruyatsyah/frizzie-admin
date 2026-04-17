@@ -25,8 +25,20 @@ export async function GET(req) {
         const limit = parseInt(searchParams.get("limit")) || 10;
         const skip = (page - 1) * limit;
 
-        const total = await Attendance.countDocuments({});
-        const data = await Attendance.find({})
+        const teacherId = searchParams.get("teacherId");
+        const startDate = searchParams.get("startDate");
+        const endDate = searchParams.get("endDate");
+
+        let filter = {};
+        if (teacherId) filter.teacher = teacherId;
+        if (startDate || endDate) {
+            filter.date = {};
+            if (startDate) filter.date.$gte = new Date(new Date(startDate).setHours(0, 0, 0, 0));
+            if (endDate) filter.date.$lte = new Date(new Date(endDate).setHours(23, 59, 59, 999));
+        }
+
+        const total = await Attendance.countDocuments(filter);
+        const data = await Attendance.find(filter)
             .populate("teacher")
             .populate("studentsTaught.student")
             .sort({ date: -1, createdAt: -1 })

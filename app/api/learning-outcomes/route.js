@@ -46,35 +46,39 @@ export async function GET(req) {
             try {
                 const Attendance = (await import("@/models/Attendance")).default;
                 
-                // For teachers, we paginate the base Attendance sessions to find missing reports
+                // 1. Get total Sessions count for pagination
                 const totalSessions = await Attendance.countDocuments({ teacher: teacherId });
+                
+                // 2. Fetch paginated Sessions
                 const pastSessions = await Attendance.find({ teacher: teacherId })
                     .sort({ date: -1 })
                     .skip(skip)
                     .limit(limit)
                     .populate("studentsTaught.student", "name");
 
+                // 3. BULK FETCH: Get all LearningOutcomes related to these sessions at once
+                const sessionIds = pastSessions.map(s => s._id);
+                const relatedOutcomes = await LearningOutcome.find({ 
+                    sessionId: { $in: sessionIds } 
+                }).populate("student", "name").populate("teacher", "name");
+
+                // 4. Create a lookup map for instant access in memory
+                // Key: sessionId-studentId
+                const outcomeMap = new Map();
+                relatedOutcomes.forEach(out => {
+                    const key = `${out.sessionId?.toString()}-${out.student?._id?.toString()}`;
+                    outcomeMap.set(key, out);
+                });
+
                 const mergedData = [];
                 
-                // For each student in each session, find if an outcome exists
+                // 5. Build merged list using the lookup map
                 for (const session of pastSessions) {
                     for (const st of session.studentsTaught) {
                         if (st.status !== "Hadir") continue; 
                         
-                        // We search for outcomes linked to this session/student
-                        const existing = await LearningOutcome.findOne({
-                            $or: [
-                                { sessionId: session._id, student: st.student?._id },
-                                { 
-                                    teacher: teacherId, 
-                                    student: st.student?._id, 
-                                    date: {
-                                        $gte: new Date(new Date(session.date).setHours(0,0,0,0)),
-                                        $lte: new Date(new Date(session.date).setHours(23,59,59,999))
-                                    }
-                                }
-                            ]
-                        }).populate("student", "name").populate("teacher", "name");
+                        const key = `${session._id.toString()}-${st.student?._id?.toString()}`;
+                        const existing = outcomeMap.get(key);
 
                         if (existing) {
                             mergedData.push({
@@ -95,9 +99,10 @@ export async function GET(req) {
                         }
                     }
                 }
+
                 return NextResponse.json({
                     data: mergedData,
-                    total: totalSessions, // For teachers, total is based on sessions
+                    total: totalSessions,
                     page,
                     totalPages: Math.ceil(totalSessions / limit)
                 });

@@ -169,7 +169,7 @@ export default function SalariesPage() {
                             className="btn-outline"
                             style={{ padding: '6px 16px', opacity: (page <= 1 || isLoading) ? 0.5 : 1 }}
                         >
-                            Sebelumnya
+                            Prev
                         </button>
                         <button 
                             disabled={page >= totalPages || isLoading}
@@ -177,7 +177,7 @@ export default function SalariesPage() {
                             className="btn-outline"
                             style={{ padding: '6px 16px', opacity: (page >= totalPages || isLoading) ? 0.5 : 1 }}
                         >
-                            Berikutnya
+                            Next
                         </button>
                     </div>
                 </div>

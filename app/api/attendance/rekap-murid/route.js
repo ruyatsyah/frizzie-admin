@@ -10,6 +10,9 @@ export async function GET(req) {
         await dbConnect();
         const { searchParams } = new URL(req.url);
         const studentId = searchParams.get("studentId");
+        const startDate = searchParams.get("startDate");
+        const endDate = searchParams.get("endDate");
+
         const page = parseInt(searchParams.get("page")) || 1;
         const limitParam = searchParams.get("limit");
         const isExport = limitParam === "all";
@@ -17,7 +20,26 @@ export async function GET(req) {
         const skip = (page - 1) * limit;
 
         // Build Aggregation Pipeline
-        const pipeline = [
+        const pipeline = [];
+
+        // 1. Initial Match (Date Range & Student ID)
+        const initialMatch = {};
+        if (startDate || endDate) {
+            initialMatch.date = {};
+            if (startDate) initialMatch.date.$gte = new Date(new Date(startDate).setHours(0,0,0,0));
+            if (endDate) initialMatch.date.$lte = new Date(new Date(endDate).setHours(23,59,59,999));
+        }
+        if (studentId) {
+            const mongoose = (await import("mongoose")).default;
+            initialMatch["studentsTaught.student"] = new mongoose.Types.ObjectId(studentId);
+        }
+
+        if (Object.keys(initialMatch).length > 0) {
+            pipeline.push({ $match: initialMatch });
+        }
+
+        // 2. Unwind & Lookups
+        pipeline.push(
             { $unwind: "$studentsTaught" },
             {
                 $lookup: {
@@ -37,9 +59,9 @@ export async function GET(req) {
                 }
             },
             { $unwind: { path: "$studentData", preserveNullAndEmptyArrays: true } }
-        ];
+        );
 
-        // Conditional Match
+        // 3. Post-unwind filter if studentId was passed (unwind created multiple rows, ensure we only get the specific student row)
         if (studentId) {
             const mongoose = (await import("mongoose")).default;
             pipeline.push({ 
@@ -58,7 +80,8 @@ export async function GET(req) {
                     studentName: "$studentData.name",
                     grade: "$studentData.grade",
                     subject: "$studentsTaught.subject",
-                    status: "$studentsTaught.status"
+                    status: "$studentsTaught.status",
+                    notes: "$notes"
                 }
             },
             { $sort: { date: -1 } }
