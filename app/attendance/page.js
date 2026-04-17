@@ -1,8 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import useSWR, { mutate } from "swr";
+import fetcher from "@/lib/fetcher";
 import { showToast } from "@/components/Toast";
-import ConfirmModal from "@/components/ConfirmModal";
-import FormModal from "@/components/FormModal";
+
+// Lazy load heavy components
+const FormModal = dynamic(() => import("@/components/FormModal"), { ssr: false });
+const ConfirmModal = dynamic(() => import("@/components/ConfirmModal"), { ssr: false });
 
 const SUBJECTS = ["Matematika", "IPA", "IPS", "Bhs. Inggris", "Bhs. Indonesia", "Mengaji", "Calistung"];
 const STATUSES = ["Hadir", "Izin", "Sakit", "Alpa"];
@@ -24,9 +29,17 @@ export default function AttendancePage() {
     });
     
     const [user, setUser] = useState(null);
-    const [attendanceList, setAttendanceList] = useState([]);
+    const [page, setPage] = useState(1);
     const [deleteId, setDeleteId] = useState(null);
     const [editingId, setEditingId] = useState(null);
+
+    // Filter based on role if teacher
+    const apiUrl = `/api/attendance?page=${page}&limit=10`;
+    const { data: swrData, error: swrError, isLoading: swrLoading } = useSWR(apiUrl, fetcher);
+    
+    // Derived state for easier mapping
+    const attendanceList = swrData?.data || [];
+    const totalPages = swrData?.totalPages || 1;
 
     useEffect(() => {
         const authData = localStorage.getItem("frizzie_auth");
@@ -38,7 +51,6 @@ export default function AttendancePage() {
             }
         }
         fetchInitialData();
-        fetchAttendance();
     }, []);
 
     const fetchInitialData = async () => {
@@ -54,17 +66,9 @@ export default function AttendancePage() {
         }
     };
 
-    const fetchAttendance = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch("/api/attendance");
-            const data = await res.json();
-            setAttendanceList(Array.isArray(data) ? data : []);
-        } catch (e) {
-            console.error("Failed to fetch attendance", e);
-        } finally {
-            setLoading(false);
-        }
+    // fetchAttendance is now handled by SWR auto-revalidation and manually via mutate()
+    const refreshData = () => {
+        mutate(apiUrl);
     };
 
     const addStudentRow = () => {
@@ -120,7 +124,7 @@ export default function AttendancePage() {
             if (res.ok) {
                 showToast(editingId ? "Absensi berhasil diperbarui!" : "Absensi berhasil dicatat!");
                 resetForm();
-                fetchAttendance();
+                refreshData();
             } else {
                 showToast(result.error || "Gagal menyimpan data", "error");
             }
@@ -155,7 +159,7 @@ export default function AttendancePage() {
             const result = await res.json();
             if (res.ok) {
                 showToast("Data absensi dihapus!");
-                fetchAttendance();
+                refreshData();
             } else {
                 showToast(result.error || "Gagal menghapus", "error");
             }
@@ -165,6 +169,17 @@ export default function AttendancePage() {
             setDeleteId(null);
         }
     };
+
+    const SkeletonRow = () => (
+        <tr>
+            <td><div className="skeleton" style={{ height: '20px', width: '100px' }}></div></td>
+            <td><div className="skeleton" style={{ height: '20px', width: '120px' }}></div></td>
+            <td><div className="skeleton" style={{ height: '32px', width: '100%' }}></div></td>
+            <td><div className="skeleton" style={{ height: '28px', width: '80px', borderRadius: '20px' }}></div></td>
+            <td><div className="skeleton" style={{ height: '20px', width: '100px' }}></div></td>
+            <td style={{ textAlign: 'right' }}><div className="skeleton" style={{ height: '32px', width: '60px', marginLeft: 'auto' }}></div></td>
+        </tr>
+    );
 
     return (
         <div className="attendance-container ripple-effect">
@@ -192,33 +207,65 @@ export default function AttendancePage() {
                                 <th>Tanggal</th>
                                 <th>Guru Pengajar</th>
                                 <th>Detail Sesi</th>
+                                <th>Status Laporan (CP)</th>
                                 <th>Lokasi/Catatan</th>
                                 <th style={{ textAlign: "right" }}>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? (
-                                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '48px' }}>
-                                    <div className="animate-spin" style={{ display: 'inline-block', marginBottom: '10px' }}>⏳</div>
-                                    <div>Memuat data...</div>
-                                </td></tr>
+                            {swrLoading ? (
+                                <>
+                                    <SkeletonRow />
+                                    <SkeletonRow />
+                                    <SkeletonRow />
+                                </>
                             ) : attendanceList.length === 0 ? (
-                                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-light)' }}>Belum ada data absensi. Klik "+ Tambah Sesi" untuk memulai.</td></tr>
-                            ) : attendanceList.slice(0, 20).map((item) => (
+                                <tr><td colSpan="6" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-light)' }}>Belum ada data absensi. Klik "+ Tambah Sesi" untuk memulai.</td></tr>
+                            ) : attendanceList.map((item) => (
                                 <tr key={item._id}>
-                                    <td style={{ fontWeight: 600 }}>{new Date(item.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}</td>
+                                    <td style={{ fontWeight: 600, color: '#0f172a' }}>{new Date(item.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}</td>
                                     <td style={{ fontWeight: 600, color: '#5A57DA' }}>{item.teacher?.name}</td>
                                     <td>
-                                        <div style={{ fontSize: '13px' }}>
-                                            <strong>{item.studentsTaught?.length || 0} Murid</strong>
-                                            <div style={{ color: 'var(--text-light)', marginTop: '2px', fontSize: '11px' }}>
-                                                {item.studentsTaught?.slice(0, 3).map(s => s.subject).join(", ")}
-                                                {(item.studentsTaught?.length || 0) > 3 && " ..."}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#1e293b' }}>{item.studentsTaught?.length || 0} Murid di Sesi Ini:</span>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                                {item.studentsTaught?.map((s, idx) => (
+                                                    <span key={idx} style={{ 
+                                                        backgroundColor: '#f1f5f9', 
+                                                        color: '#475569', 
+                                                        fontSize: '10px', 
+                                                        padding: '2px 8px', 
+                                                        borderRadius: '99px',
+                                                        border: '1px solid #e2e8f0',
+                                                        whiteSpace: 'nowrap'
+                                                    }}>
+                                                        {s.student?.name} • {s.subject}
+                                                    </span>
+                                                ))}
                                             </div>
                                         </div>
                                     </td>
+                                    <td>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ 
+                                                padding: '4px 10px', 
+                                                borderRadius: '20px', 
+                                                fontSize: '11px', 
+                                                fontWeight: 700,
+                                                backgroundColor: item.cpCount >= item.studentCount ? '#dcfce7' : (item.cpCount > 0 ? '#fef9c3' : '#fee2e2'),
+                                                color: item.cpCount >= item.studentCount ? '#166534' : (item.cpCount > 0 ? '#854d0e' : '#991b1b'),
+                                                border: '1px solid currentColor',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px'
+                                            }}>
+                                                {item.cpCount >= item.studentCount ? '✅ Lengkap' : (item.cpCount > 0 ? '⏳ Sebagian' : '❌ Belum')}
+                                                <span style={{ opacity: 0.7 }}>({item.cpCount}/{item.studentCount})</span>
+                                            </span>
+                                        </div>
+                                    </td>
                                     <td style={{ color: 'var(--text-light)', fontSize: '12px' }}>
-                                        {item.notes || "-"}
+                                        <div style={{ fontStyle: item.notes ? 'normal' : 'italic' }}>{item.notes || "Tidak ada catatan"}</div>
                                     </td>
                                     <td style={{ textAlign: "right" }}>
                                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
@@ -234,6 +281,31 @@ export default function AttendancePage() {
                             ))}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Pagination Controls */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
+                    <div style={{ fontSize: '13px', color: 'var(--text-light)' }}>
+                        Halaman <strong>{page}</strong> dari <strong>{totalPages}</strong>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                            disabled={page <= 1 || swrLoading}
+                            onClick={() => setPage(page - 1)}
+                            className="btn-outline"
+                            style={{ padding: '6px 16px', opacity: (page <= 1 || swrLoading) ? 0.5 : 1 }}
+                        >
+                            Sebelumnya
+                        </button>
+                        <button 
+                            disabled={page >= totalPages || swrLoading}
+                            onClick={() => setPage(page + 1)}
+                            className="btn-outline"
+                            style={{ padding: '6px 16px', opacity: (page >= totalPages || swrLoading) ? 0.5 : 1 }}
+                        >
+                            Selanjutnya
+                        </button>
+                    </div>
                 </div>
             </div>
 

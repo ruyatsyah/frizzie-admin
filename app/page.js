@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -9,6 +10,7 @@ export default function Dashboard() {
     unpaidBillings: 0,
     unpaidSalaries: 0,
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const authData = localStorage.getItem("frizzie_auth");
@@ -17,6 +19,7 @@ export default function Dashboard() {
     }
 
     async function fetchStats() {
+      setLoading(true);
       try {
         const res = await fetch("/api/dashboard");
         if (res.ok) {
@@ -25,6 +28,8 @@ export default function Dashboard() {
         }
       } catch (e) {
         console.error("Failed to fetch dashboard stats", e);
+      } finally {
+        setLoading(false);
       }
     }
     fetchStats();
@@ -83,7 +88,9 @@ export default function Dashboard() {
               </div>
             </div>
             <p style={{ fontSize: '14px', color: 'var(--text-light)', marginBottom: '4px' }}>Tagihan Pelunasan</p>
-            <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-dark)' }}>Rp {(stats.totalIncome || 0).toLocaleString("id-ID")}</p>
+            <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-dark)' }}>
+                {loading ? <span className="skeleton" style={{ display: 'inline-block', width: '150px', height: '32px' }}></span> : `Rp ${stats.totalIncome?.toLocaleString("id-ID")}`}
+            </p>
           </div>
 
           {/* Total Expense */}
@@ -95,7 +102,9 @@ export default function Dashboard() {
               </div>
             </div>
             <p style={{ fontSize: '14px', color: 'var(--text-light)', marginBottom: '4px' }}>Beban Gaji Dibayar</p>
-            <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-dark)' }}>Rp {(stats.totalExpense || 0).toLocaleString("id-ID")}</p>
+            <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-dark)' }}>
+                {loading ? <span className="skeleton" style={{ display: 'inline-block', width: '150px', height: '32px' }}></span> : `Rp ${stats.totalExpense?.toLocaleString("id-ID")}`}
+            </p>
           </div>
 
           {/* Net Balance */}
@@ -167,7 +176,13 @@ export default function Dashboard() {
               </div>
               <div>
                 <p style={{ color: 'var(--text-light)', fontSize: '13px', fontWeight: 500 }}>Gaji Pending</p>
-                <p style={{ fontSize: '24px', fontWeight: 700, color: 'var(--danger)' }}>{stats.unpaidSalaries}</p>
+                  {stats.unpaidSalaries === 0 && !loading ? (
+                    <p style={{ fontSize: '24px', fontWeight: 700, color: 'var(--success)' }}>0</p>
+                  ) : (
+                    <p style={{ fontSize: '24px', fontWeight: 700, color: 'var(--danger)' }}>
+                        {loading ? <span className="skeleton" style={{ display: 'inline-block', width: '40px', height: '24px' }}></span> : stats.unpaidSalaries}
+                    </p>
+                  )}
               </div>
             </div>
           </div>
@@ -180,24 +195,31 @@ export default function Dashboard() {
 function TeacherDashboard({ user }) {
     const [stats, setStats] = useState({ cpCount: 0, sessionsThisMonth: 0 });
     const [recentCP, setRecentCP] = useState([]);
+    const [pendingTasks, setPendingTasks] = useState([]);
     const [salaries, setSalaries] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchTeacherData() {
+            setLoading(true);
             try {
-                const res = await fetch(`/api/teacher/dashboard?teacherId=${user.teacherId}`);
+                const tId = user.teacherId || user.id;
+                const res = await fetch(`/api/teacher/dashboard?teacherId=${tId}`);
                 if (res.ok) {
                     const data = await res.json();
                     setStats(data.stats);
                     setRecentCP(data.recentCP);
+                    setPendingTasks(data.pendingTasks || []);
                     setSalaries(data.salaries || []);
                 }
             } catch (e) {
                 console.error("Failed to fetch teacher dashboard data", e);
+            } finally {
+                setLoading(false);
             }
         }
-        if (user.teacherId) fetchTeacherData();
-    }, [user.teacherId]);
+        if (user.teacherId || user.id) fetchTeacherData();
+    }, [user.teacherId, user.id]);
 
     return (
         <div className="dashboard-container teacher-dashboard">
@@ -285,7 +307,9 @@ function TeacherDashboard({ user }) {
                 <div className="card" style={{ border: 'none', background: 'white', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'relative', zIndex: 1 }}>
                         <p style={{ color: 'var(--text-light)', fontSize: '11px', fontWeight: 600, marginBottom: '4px', letterSpacing: '0.05em' }}>CAPAIAN PEMBELAJARAN (CP)</p>
-                        <p style={{ fontSize: '32px', fontWeight: 800, color: 'var(--primary)' }}>{stats.cpCount}</p>
+                        <p style={{ fontSize: '32px', fontWeight: 800, color: 'var(--primary)' }}>
+                            {loading ? <span className="skeleton" style={{ display: 'inline-block', width: '60px', height: '32px' }}></span> : stats.cpCount}
+                        </p>
                         <p style={{ fontSize: '12px', color: 'var(--text-light)', marginTop: '4px' }}>Total evaluasi tersimpan</p>
                     </div>
                     <div style={{ position: 'absolute', bottom: '-10px', right: '-10px', opacity: 0.1, color: 'var(--primary)' }}>
@@ -295,7 +319,9 @@ function TeacherDashboard({ user }) {
                 <div className="card" style={{ border: 'none', background: 'white', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'relative', zIndex: 1 }}>
                         <p style={{ color: 'var(--text-light)', fontSize: '11px', fontWeight: 600, marginBottom: '4px', letterSpacing: '0.05em' }}>SESI BULAN INI</p>
-                        <p style={{ fontSize: '32px', fontWeight: 800, color: 'var(--success)' }}>{stats.sessionsThisMonth}</p>
+                        <p style={{ fontSize: '32px', fontWeight: 800, color: 'var(--success)' }}>
+                            {loading ? <span className="skeleton" style={{ display: 'inline-block', width: '60px', height: '32px' }}></span> : stats.sessionsThisMonth}
+                        </p>
                         <p style={{ fontSize: '12px', color: 'var(--text-light)', marginTop: '4px' }}>Total kehadiran mengajar</p>
                     </div>
                     <div style={{ position: 'absolute', bottom: '-10px', right: '-10px', opacity: 0.1, color: 'var(--success)' }}>
@@ -305,7 +331,46 @@ function TeacherDashboard({ user }) {
             </div>
 
             <div className="teacher-main-grid">
-
+                {/* Pending Tasks Section */}
+                <div className="card" style={{ border: pendingTasks.length > 0 ? '1px solid #fecaca' : '1px solid var(--border)', background: pendingTasks.length > 0 ? '#fffafb' : 'white' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <h3 style={{ margin: 0, fontSize: '16px', color: pendingTasks.length > 0 ? '#b91c1c' : 'var(--text-dark)' }}>
+                            {pendingTasks.length > 0 ? '⚠️ Laporan CP Belum Selesai' : '✅ Laporan CP Terpenuhi'}
+                        </h3>
+                        {pendingTasks.length > 0 && <span style={{ fontSize: '12px', background: '#fee2e2', color: '#b91c1c', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>{pendingTasks.length} Tertunda</span>}
+                    </div>
+                    
+                    {loading ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="skeleton" style={{ height: '60px', borderRadius: '10px' }}></div>
+                            ))}
+                        </div>
+                    ) : pendingTasks.length === 0 ? (
+                        <p style={{ color: 'var(--text-light)', fontSize: '14px' }}>Semua laporan CP untuk sesi terakhir sudah diisi. Kerja bagus! ✨</p>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {pendingTasks.slice(0, 5).map((task, i) => (
+                                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'white', borderRadius: '10px', border: '1px solid #fee2e2' }}>
+                                    <div>
+                                        <p style={{ fontWeight: 700, fontSize: '14px', marginBottom: '2px' }}>{task.student?.name}</p>
+                                        <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>
+                                            {task.subject} • {new Date(task.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' })}
+                                        </p>
+                                    </div>
+                                    <Link href={`/learning-outcomes?sessionId=${task.sessionId}&studentId=${task.student?._id}`} className="btn-primary" style={{ fontSize: '11px', padding: '6px 12px', borderRadius: '8px', backgroundColor: '#5A57DA', textDecoration: 'none' }}>
+                                        Lengkapi
+                                    </Link>
+                                </div>
+                            ))}
+                            {pendingTasks.length > 5 && (
+                                <a href="/learning-outcomes" style={{ textAlign: 'center', fontSize: '13px', color: '#5A57DA', fontWeight: 600, marginTop: '8px' }}>
+                                    Lihat {pendingTasks.length - 5} tugas lainnya...
+                                </a>
+                            )}
+                        </div>
+                    )}
+                </div>
 
                 <div className="card">
                     <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Riwayat Gaji Terakhir</h3>

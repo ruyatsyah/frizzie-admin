@@ -12,8 +12,13 @@ export async function GET(req) {
         const { searchParams } = new URL(req.url);
         const teacherId = searchParams.get("teacherId");
 
-        if (!teacherId) {
-            return NextResponse.json({ error: "Teacher ID required" }, { status: 400 });
+        if (!teacherId || teacherId === "undefined" || !mongoose.Types.ObjectId.isValid(teacherId)) {
+            return NextResponse.json({ 
+                stats: { cpCount: 0, sessionsThisMonth: 0 },
+                recentCP: [],
+                pendingTasks: [],
+                salaries: []
+            });
         }
 
         const tId = new mongoose.Types.ObjectId(teacherId);
@@ -34,7 +39,43 @@ export async function GET(req) {
             .limit(5)
             .populate("student", "name");
 
-        // 3. Salary History
+        // 3. Pending CP Tasks (Sessions from Attendance that need Reports)
+        const recentSessions = await Attendance.find({ teacher: tId })
+            .sort({ date: -1 })
+            .limit(20)
+            .populate("studentsTaught.student", "name");
+
+        const existingCP = await LearningOutcome.find({ 
+            teacher: tId, 
+            $or: [
+                { sessionId: { $in: recentSessions.map(s => s._id) } },
+                { student: { $in: recentSessions.flatMap(s => s.studentsTaught.map(st => st.student?._id)) } }
+            ]
+        }, "sessionId student date");
+
+        const pendingTasks = [];
+        for (const session of recentSessions) {
+            for (const st of session.studentsTaught) {
+                if (st.status !== "Hadir") continue;
+
+                const filled = existingCP.some(cp => 
+                    (cp.sessionId?.toString() === session._id.toString()) || 
+                    (!cp.sessionId && cp.student?.toString() === st.student?._id.toString() && 
+                     new Date(cp.date).toDateString() === new Date(session.date).toDateString())
+                );
+
+                if (!filled) {
+                    pendingTasks.push({
+                        sessionId: session._id,
+                        student: st.student,
+                        subject: st.subject,
+                        date: session.date
+                    });
+                }
+            }
+        }
+
+        // 4. Salary History
         const salaries = await Salary.find({ teacher: tId })
             .sort({ createdAt: -1 })
             .limit(10);
@@ -42,6 +83,7 @@ export async function GET(req) {
         return NextResponse.json({
             stats: { cpCount, sessionsThisMonth },
             recentCP,
+            pendingTasks,
             salaries
         });
     } catch (error) {

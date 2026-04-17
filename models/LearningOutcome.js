@@ -16,6 +16,10 @@ const LearningOutcomeSchema = new mongoose.Schema(
         material: { type: String, required: true },
         achievement: { type: String, required: true },
         date: { type: Date, default: Date.now },
+        sessionId: { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: "Attendance" 
+        },
     },
     { timestamps: true }
 );
