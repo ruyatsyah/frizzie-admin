@@ -13,13 +13,18 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        padding: '8px',
-                        display: 'none', // Hidden on desktop, shown via mobile-toggle below
+                        color: '#0f172a',
+                        borderRadius: '12px',
+                        display: 'none',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: 'var(--text-dark)'
+                        transition: 'all 0.2s',
+                        width: '32px',
+                        height: '32px'
                     }}
                     className="mobile-hamburger"
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />

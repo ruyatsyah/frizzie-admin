@@ -118,17 +118,20 @@ export default function AppLayout({ children }) {
                 </div>
 
                 {/* Perfectly Balanced Footer */}
-                <footer style={{ 
-                    padding: '32px 24px 24px', 
-                    borderTop: '1px solid #e2e8f0',
-                    textAlign: 'center',
+                <footer className="no-print" style={{ 
+                    padding: '20px 24px', 
+                    borderTop: '1px solid var(--border)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
                     color: '#94a3b8',
                     fontSize: '12px',
                     fontWeight: 500,
                     letterSpacing: '0.025em',
                     width: '100%'
                 }}>
-                    © 2025 FrizzieSmartClub. Create with ❤️ ruyatsyah
+                    <div>© 2025 FrizzieSmartClub</div>
+                    <div>Create with ❤️ ruyatsyah</div>
                 </footer>
             </main>
 
@@ -139,6 +142,13 @@ export default function AppLayout({ children }) {
                     }
                     .main-content {
                         width: 100vw !important;
+                    }
+                }
+                @media (max-width: 640px) {
+                    footer.no-print {
+                        flex-direction: column;
+                        gap: 8px;
+                        text-align: center;
                     }
                 }
             `}</style>
