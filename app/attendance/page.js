@@ -460,16 +460,19 @@ export default function AttendancePage() {
                                             borderRadius: '8px', 
                                             border: 'none', 
                                             backgroundColor: '#FEE2E2', 
-                                            color: '#EF4444', 
+                                            color: '#1E293B', 
                                             display: 'flex', 
                                             alignItems: 'center', 
                                             justifyContent: 'center',
                                             cursor: 'pointer',
+                                            fontSize: '16px',
+                                            fontWeight: 700,
+                                            lineHeight: 1,
                                             opacity: formData.studentsTaught.length === 1 ? 0.3 : 1
                                         }}
                                         disabled={formData.studentsTaught.length === 1}
                                     >
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                                        ✕
                                     </button>
                                 </div>
                             ))}
