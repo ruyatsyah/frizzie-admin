@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
-import Toast from "./Toast";
+import Toast, { showToast } from "./Toast";
 
 export default function AppLayout({ children }) {
     const router = useRouter();
@@ -45,6 +45,36 @@ export default function AppLayout({ children }) {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // 30-minute idle timeout
+    useEffect(() => {
+        if (!user || pathname === "/login") return;
+
+        let timeoutId;
+        const TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+        const handleLogout = () => {
+            localStorage.removeItem("frizzie_auth");
+            setUser(null);
+            showToast("Sesi telah berakhir karena tidak ada aktivitas.", "error");
+            router.push("/login");
+        };
+
+        const resetTimer = () => {
+            if (timeoutId) clearTimeout(timeoutId);
+            timeoutId = setTimeout(handleLogout, TIMEOUT);
+        };
+
+        const events = ['mousemove', 'keydown', 'scroll', 'click', 'touchstart'];
+        
+        resetTimer();
+        events.forEach(event => window.addEventListener(event, resetTimer));
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+            events.forEach(event => window.removeEventListener(event, resetTimer));
+        };
+    }, [user, pathname, router]);
 
     // Show blank page while checking auth to avoid flash
     if (isChecking) {

@@ -217,10 +217,21 @@ export default function LearningOutcomesPage() {
             showToast("Harap pilih murid dan rentang tanggal untuk mencetak laporan.", "warning");
             return;
         }
-        // Give time for layout to settle
+
+        const studentName = getSelectedStudentName().replace(/\s+/g, ' ').trim();
+        const startDate = new Date(adminFilters.startDate);
+        const bulan = startDate.toLocaleDateString("id-ID", { month: "long" });
+        const tahun = startDate.getFullYear();
+        const fileName = `Laporan Belajar_${studentName}_${bulan}_${tahun}`;
+
+        const originalTitle = document.title;
+        document.title = fileName;
+
         showToast("Menyiapkan dokumen...");
         setTimeout(() => {
             window.print();
+            // Restore title after print dialog closes
+            setTimeout(() => { document.title = originalTitle; }, 1000);
         }, 800);
     };
 

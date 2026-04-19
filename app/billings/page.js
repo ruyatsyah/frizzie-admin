@@ -305,7 +305,7 @@ export default function BillingsPage() {
                     backgroundColor: "white",
                     color: "#333",
                     fontFamily: "Inter, sans-serif",
-                    boxShadow: "0 0 0 1px rgba(0,0,0,0.05)" /* Subtle print bounding */
+                    boxShadow: "0 0 0 1px rgba(0,0,0,0.05)"
                 }}>
                     <div style={{ textAlign: "center", borderBottom: "4px solid var(--primary)", paddingBottom: "24px", marginBottom: "32px" }}>
                         <h1 style={{ fontSize: "32px", color: "var(--primary)", marginBottom: "4px", fontWeight: 800, letterSpacing: "-0.05em" }}>FrizzieSmartClub</h1>
@@ -323,13 +323,16 @@ export default function BillingsPage() {
                             <p style={{ fontWeight: 600, color: "#111827", marginBottom: "6px", fontSize: "14px" }}>{new Date().toLocaleDateString("id-ID")}</p>
                             <span style={{
                                 display: "inline-block",
-                                padding: "4px 12px",
-                                borderRadius: "4px",
-                                fontSize: "11px",
-                                fontWeight: 700,
-                                backgroundColor: printData.status === 'Lunas' ? '#10B981' : '#EF4444',
-                                color: 'white',
-                                letterSpacing: "0.05em"
+                                padding: "6px 16px",
+                                borderRadius: "6px",
+                                fontSize: "14px",
+                                fontWeight: 800,
+                                backgroundColor: printData.status === 'Lunas' ? '#ECFDF5' : '#FEF2F2',
+                                border: `2px solid ${printData.status === 'Lunas' ? '#10B981' : '#EF4444'}`,
+                                color: printData.status === 'Lunas' ? '#10B981' : '#EF4444',
+                                letterSpacing: "0.05em",
+                                WebkitPrintColorAdjust: 'exact',
+                                printColorAdjust: 'exact'
                             }}>
                                 {printData.status.toUpperCase()}
                             </span>

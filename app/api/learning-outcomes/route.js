@@ -47,25 +47,38 @@ export async function GET(req) {
         if (teacherId && teacherId !== "undefined") {
             try {
                 const Attendance = (await import("@/models/Attendance")).default;
+                const mongoose = (await import("mongoose")).default;
                 
-                // 1. Get total Sessions count for pagination
-                const totalSessions = await Attendance.countDocuments({ teacher: teacherId });
-                
-                // 2. Fetch paginated Sessions
-                const pastSessions = await Attendance.find({ teacher: teacherId })
-                    .sort({ date: -1 })
-                    .skip(skip)
-                    .limit(limit)
-                    .populate("studentsTaught.student", "name");
+                const pipelineCommon = [
+                    { $match: { teacher: new mongoose.Types.ObjectId(teacherId) } },
+                    { $unwind: "$studentsTaught" },
+                    { $match: { "studentsTaught.status": "Hadir" } }
+                ];
 
-                // 3. BULK FETCH: Get all LearningOutcomes related to these sessions at once
+                const totalAgg = await Attendance.aggregate([...pipelineCommon, { $count: "totalItems" }]);
+                const totalItems = totalAgg.length > 0 ? totalAgg[0].totalItems : 0;
+
+                const pastSessions = await Attendance.aggregate([
+                    ...pipelineCommon,
+                    { $sort: { date: -1, _id: -1 } },
+                    { $skip: skip },
+                    { $limit: limit },
+                    {
+                        $lookup: {
+                            from: "students",
+                            localField: "studentsTaught.student",
+                            foreignField: "_id",
+                            as: "studentDoc"
+                        }
+                    },
+                    { $unwind: { path: "$studentDoc", preserveNullAndEmptyArrays: true } }
+                ]);
+
                 const sessionIds = pastSessions.map(s => s._id);
                 const relatedOutcomes = await LearningOutcome.find({ 
                     sessionId: { $in: sessionIds } 
                 }).populate("student", "name").populate("teacher", "name");
 
-                // 4. Create a lookup map for instant access in memory
-                // Key: sessionId-studentId
                 const outcomeMap = new Map();
                 relatedOutcomes.forEach(out => {
                     const key = `${out.sessionId?.toString()}-${out.student?._id?.toString()}`;
@@ -73,40 +86,36 @@ export async function GET(req) {
                 });
 
                 const mergedData = [];
-                
-                // 5. Build merged list using the lookup map
-                for (const session of pastSessions) {
-                    for (const st of session.studentsTaught) {
-                        if (st.status !== "Hadir") continue; 
-                        
-                        const key = `${session._id.toString()}-${st.student?._id?.toString()}`;
-                        const existing = outcomeMap.get(key);
+                for (const row of pastSessions) {
+                    const sessionIdStr = row._id.toString();
+                    const studentIdStr = row.studentDoc?._id?.toString() || row.studentsTaught.student.toString();
+                    const key = `${sessionIdStr}-${studentIdStr}`;
+                    const existing = outcomeMap.get(key);
 
-                        if (existing) {
-                            mergedData.push({
-                                ...existing._doc,
-                                isCompleted: true
-                            });
-                        } else {
-                            mergedData.push({
-                                teacher: { _id: teacherId },
-                                student: st.student,
-                                subject: st.subject,
-                                material: "",
-                                achievement: "",
-                                date: session.date,
-                                sessionId: session._id,
-                                isCompleted: false
-                            });
-                        }
+                    if (existing) {
+                        mergedData.push({
+                            ...existing._doc,
+                            isCompleted: true
+                        });
+                    } else {
+                        mergedData.push({
+                            teacher: { _id: teacherId },
+                            student: row.studentDoc || { _id: studentIdStr },
+                            subject: row.studentsTaught.subject,
+                            material: "",
+                            achievement: "",
+                            date: row.date,
+                            sessionId: row._id,
+                            isCompleted: false
+                        });
                     }
                 }
 
                 return NextResponse.json({
                     data: mergedData,
-                    total: totalSessions,
+                    total: totalItems,
                     page,
-                    totalPages: Math.ceil(totalSessions / limit)
+                    totalPages: Math.ceil(totalItems / limit)
                 });
             } catch (err) {
                 console.error("Teacher Merge Error:", err);
