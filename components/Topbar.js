@@ -172,7 +172,7 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                             zIndex: 50,
                             overflow: 'hidden',
                         }}>
-                            <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+                            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
                                 <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-dark)' }}>{user?.name || "User"}</p>
                                 <p style={{ fontSize: '12px', color: 'var(--text-light)' }}>{user?.email}</p>
                             </div>
@@ -183,7 +183,7 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                                 }}
                                 style={{
                                     width: '100%',
-                                    padding: '12px 16px',
+                                    padding: '12px 20px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '10px',
@@ -196,6 +196,7 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                                     fontSize: '13px',
                                     fontWeight: 500,
                                     textAlign: 'left',
+                                    justifyContent: 'flex-start',
                                     transition: 'background 0.15s',
                                 }}
                                 onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
@@ -213,7 +214,7 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                                 }}
                                 style={{
                                     width: '100%',
-                                    padding: '12px 16px',
+                                    padding: '12px 20px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '10px',
@@ -225,6 +226,7 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                                     fontSize: '13px',
                                     fontWeight: 500,
                                     textAlign: 'left',
+                                    justifyContent: 'flex-start',
                                     transition: 'background 0.15s',
                                 }}
                                 onMouseEnter={(e) => e.currentTarget.style.background = '#fef2f2'}
