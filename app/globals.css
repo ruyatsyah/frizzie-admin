@@ -305,6 +305,17 @@ h4 {
   background-color: var(--background);
 }
 
+/* Zebra Styling */
+.data-table tbody tr:nth-child(even),
+.zebra-rows tr:nth-child(even) {
+  background-color: var(--secondary);
+}
+
+.data-table tbody tr:hover td,
+.zebra-rows tr:hover td {
+  background-color: var(--background) !important;
+}
+
 /* Tag Styles */
 .status-tag {
   display: inline-flex;

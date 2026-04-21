@@ -294,12 +294,6 @@ export default function TeacherRecapPage() {
             </div>
 
             <style jsx>{`
-                .zebra-rows tr:nth-child(even) {
-                    background-color: white;
-                }
-                .row-hover:hover {
-                    background-color: #F8FAFC !important;
-                }
                 @media (max-width: 768px) {
                     .no-mobile { display: none; }
                     .mobile-only { display: block !important; }
