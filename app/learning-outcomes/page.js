@@ -242,6 +242,7 @@ export default function LearningOutcomesPage() {
 
     const SkeletonRow = () => (
         <tr>
+            <td><div className="skeleton" style={{ height: '18px', width: '30px', margin: '0 auto' }}></div></td>
             <td><div className="skeleton" style={{ height: '18px', width: '80px' }}></div></td>
             {user?.role === 'admin' && <td><div className="skeleton" style={{ height: '18px', width: '100px' }}></div></td>}
             <td><div className="skeleton" style={{ height: '18px', width: '120px' }}></div></td>
@@ -300,6 +301,7 @@ export default function LearningOutcomesPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px' }} border="1">
                     <thead>
                         <tr style={{ backgroundColor: '#f8fafc' }}>
+                            <th style={{ padding: '12px', textAlign: 'center', width: '40px', fontSize: '12px' }}>#</th>
                             <th style={{ padding: '12px', textAlign: 'center', width: '20%', fontSize: '12px' }}>TANGGAL</th>
                             <th style={{ padding: '12px', textAlign: 'left', width: '50%', fontSize: '12px' }}>MATA PELAJARAN / MATERI</th>
                             <th style={{ padding: '12px', textAlign: 'left', width: '30%', fontSize: '12px' }}>CAPAIAN</th>
@@ -307,9 +309,10 @@ export default function LearningOutcomesPage() {
                     </thead>
                     <tbody>
                         {list.length === 0 ? (
-                            <tr><td colSpan="3" style={{ padding: '30px', textAlign: 'center', color: '#999' }}>Tidak ada data capaian dalam periode ini.</td></tr>
-                        ) : list.map(item => (
+                            <tr><td colSpan="4" style={{ padding: '30px', textAlign: 'center', color: '#999' }}>Tidak ada data capaian dalam periode ini.</td></tr>
+                        ) : list.map((item, index) => (
                             <tr key={item._id}>
+                                <td style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>{index + 1}</td>
                                 <td style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>{new Date(item.date).toLocaleDateString("id-ID")}</td>
                                 <td style={{ padding: '12px' }}>
                                     <div style={{ fontWeight: 700, fontSize: '14px' }}>{item.subject}</div>
@@ -412,6 +415,7 @@ export default function LearningOutcomesPage() {
                         <table className="data-table" style={{ border: 'none', borderCollapse: 'collapse' }}>
                             <thead style={{ backgroundColor: '#F8FAFC', borderBottom: '2px solid #E2E8F0' }}>
                                 <tr>
+                                    <th style={{ width: '50px', textAlign: 'center', verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>#</th>
                                     <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TANGGAL</th>
                                     {user?.role === 'admin' && <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>GURU</th>}
                                     <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>NAMA MURID</th>
@@ -429,9 +433,12 @@ export default function LearningOutcomesPage() {
                                         <SkeletonRow />
                                     </>
                                 ) : list.length === 0 ? (
-                                    <tr><td colSpan="6" align="center">Belum ada rekap capaian.</td></tr>
-                                ) : list.map((item) => (
+                                    <tr><td colSpan="8" align="center">Belum ada rekap capaian.</td></tr>
+                                ) : list.map((item, index) => (
                                     <tr key={item._id || `${item.sessionId}-${item.student?._id || 'unknown'}-${Math.random()}`}>
+                                        <td style={{ textAlign: 'center', color: '#94A3B8', fontSize: '12px', verticalAlign: 'middle', padding: '8px 16px' }}>
+                                            {(page - 1) * 10 + index + 1}
+                                        </td>
                                         <td style={{ verticalAlign: 'middle', padding: '8px 16px' }}>{new Date(item.date).toLocaleDateString("id-ID")}</td>
                                         {user?.role === 'admin' && <td style={{ fontWeight: 500, verticalAlign: 'middle', padding: '8px 16px' }}>{item.teacher?.name}</td>}
                                         <td style={{ fontWeight: 500, verticalAlign: 'middle', padding: '8px 16px' }}>{item.student?.name}</td>
@@ -665,9 +672,9 @@ export default function LearningOutcomesPage() {
 function SkeletonRow() {
     return (
         <tr>
-            {Array(6).fill(0).map((_, i) => (
+            {Array(7).fill(0).map((_, i) => (
                 <td key={i} style={{ padding: '16px' }}>
-                    <div className="skeleton" style={{ height: '20px', width: i === 0 ? '80px' : '100%' }}></div>
+                    <div className="skeleton" style={{ height: '20px', width: i === 0 ? '30px' : i === 1 ? '80px' : '100%' }}></div>
                 </td>
             ))}
         </tr>
