@@ -30,16 +30,36 @@ export async function GET(req) {
         // Fetch all initial data in parallel
         const [
             cpCount,
-            sessionsThisMonth,
+            sessionsThisMonthResult,
             recentCP,
             recentSessions,
             salaries
         ] = await Promise.all([
             LearningOutcome.countDocuments({ teacher: tId }),
-            Attendance.countDocuments({
-                teacher: tId,
-                date: { $gte: startOfMonth }
-            }),
+            Attendance.aggregate([
+                {
+                    $match: {
+                        teacher: tId,
+                        date: { $gte: startOfMonth }
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        total: {
+                            $sum: {
+                                $size: {
+                                    $filter: {
+                                        input: "$studentsTaught",
+                                        as: "st",
+                                        cond: { $eq: ["$$st.status", "Hadir"] }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ]),
             LearningOutcome.find({ teacher: tId })
                 .sort({ date: -1 })
                 .limit(5)
@@ -52,6 +72,8 @@ export async function GET(req) {
                 .sort({ createdAt: -1 })
                 .limit(10)
         ]);
+
+        const sessionsThisMonth = sessionsThisMonthResult[0]?.total || 0;
 
         const existingCP = await LearningOutcome.find({ 
             teacher: tId, 
