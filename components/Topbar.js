@@ -65,7 +65,19 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
     };
 
     return (
-        <header className="topbar" style={{ boxShadow: 'var(--shadow-sm)', borderBottom: '1px solid var(--border)', position: 'relative', zIndex: 50, justifyContent: 'space-between', padding: '4px 24px' }}>
+        <header className="topbar" style={{ 
+            height: '64px', 
+            backgroundColor: '#ffffff',
+            borderBottom: '1px solid var(--border)', 
+            position: 'relative', 
+            zIndex: 50, 
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between', 
+            padding: '0 24px',
+            boxSizing: 'border-box',
+            margin: 0
+        }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <button 
                     onClick={onMenuClick}
@@ -73,7 +85,7 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        color: '#5A57DA',
+                        color: '#78350f',
                         borderRadius: '10px',
                         display: 'flex',
                         alignItems: 'center',
@@ -97,14 +109,7 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                         <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
                     </svg>
                 </button>
-                <span className="brand-name" style={{ 
-                    color: '#5A57DA', 
-                    fontSize: '20px', 
-                    fontWeight: 800, 
-                    letterSpacing: '-0.03em'
-                }}>
-                    FrizzieSmartClub
-                </span>
+
             </div>
 
 
@@ -132,7 +137,7 @@ export default function Topbar({ onMenuClick, onLogout, user }) {
                     <div style={{
                         width: '32px',
                         height: '32px',
-                        background: 'linear-gradient(135deg, #6366f1, #4338ca)',
+                        background: 'linear-gradient(135deg, #78350f, #451a03)',
                         color: 'white',
                         borderRadius: '50%',
                         display: 'flex',

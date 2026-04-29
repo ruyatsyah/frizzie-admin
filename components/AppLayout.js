@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import Breadcrumbs from "./Breadcrumbs";
 import Toast, { showToast } from "./Toast";
 
 export default function AppLayout({ children }) {
@@ -14,14 +15,16 @@ export default function AppLayout({ children }) {
 
     useEffect(() => {
         const authData = localStorage.getItem("frizzie_auth");
+        const isPublicPage = pathname === "/login" || pathname === "/landing" || pathname === "/register";
+        
         if (authData) {
             try {
                 const parsedUser = JSON.parse(authData);
                 setUser(parsedUser);
             } catch (e) {
-                if (pathname !== "/login") router.replace("/login");
+                if (!isPublicPage) router.replace("/login");
             }
-        } else if (pathname !== "/login") {
+        } else if (!isPublicPage) {
             router.replace("/login");
         }
         setIsChecking(false);
@@ -48,7 +51,8 @@ export default function AppLayout({ children }) {
 
     // 30-minute idle timeout
     useEffect(() => {
-        if (!user || pathname === "/login") return;
+        const isPublicPage = pathname === "/login" || pathname === "/landing" || pathname === "/register";
+        if (!user || isPublicPage) return;
 
         let timeoutId;
         const TIMEOUT = 30 * 60 * 1000; // 30 minutes
@@ -81,8 +85,9 @@ export default function AppLayout({ children }) {
         return null;
     }
 
-    // On the login page, only render children (no sidebar/topbar)
-    if (pathname === "/login") {
+    // On public pages, only render children (no sidebar/topbar)
+    const isPublicPage = pathname === "/login" || pathname === "/landing" || pathname === "/register";
+    if (isPublicPage) {
         return (
             <>
                 <Toast />
@@ -97,7 +102,7 @@ export default function AppLayout({ children }) {
     }
 
     return (
-        <div className="app-layout" style={{ display: 'flex', minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
+        <div className="app-layout" style={{ display: 'flex', alignItems: 'stretch', minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
             <Toast />
             
             {/* Mobile Backdrop */}
@@ -122,11 +127,13 @@ export default function AppLayout({ children }) {
                 flex: 1, 
                 backgroundColor: '#F8FAFC', 
                 height: '100vh', 
-                overflowY: 'auto',
+                overflow: 'hidden', // Prevent main from scrolling
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
-                width: '100%' // Ensure full alignment
+                width: '100%',
+                margin: 0,
+                padding: 0
             }}>
                 <Topbar
                     user={user}
@@ -138,11 +145,21 @@ export default function AppLayout({ children }) {
                 />
                 
                 <div style={{ 
+                    backgroundColor: '#ffffff', 
+                    borderBottom: '1px solid var(--border)',
+                    padding: '12px 24px',
+                    zIndex: 40
+                }}>
+                    <Breadcrumbs />
+                </div>
+                
+                <div style={{ 
                     maxWidth: '1600px', 
                     margin: '0 auto', 
                     padding: '32px 24px', 
                     width: '100%',
-                    flex: 1 // Content takes available space
+                    flex: 1, // Content takes available space
+                    overflowY: 'auto' // Only content scrolls
                 }}>
                     {children}
                 </div>

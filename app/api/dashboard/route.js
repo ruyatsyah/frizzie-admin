@@ -5,6 +5,7 @@ import Student from "@/models/Student";
 import Teacher from "@/models/Teacher";
 import Billing from "@/models/Billing";
 import Salary from "@/models/Salary";
+import Expense from "@/models/Expense";
 
 export async function GET() {
     try {
@@ -16,7 +17,8 @@ export async function GET() {
             unpaidBillings,
             unpaidSalaries,
             totalIncomeResult,
-            totalExpenseResult
+            totalSalaryExpenseResult,
+            totalGeneralExpenseResult
         ] = await Promise.all([
             Student.countDocuments(),
             Teacher.countDocuments(),
@@ -29,11 +31,16 @@ export async function GET() {
             Salary.aggregate([
                 { $match: { status: "Sudah Dibayar" } },
                 { $group: { _id: null, total: { $sum: "$amount" } } }
+            ]),
+            Expense.aggregate([
+                { $group: { _id: null, total: { $sum: "$amount" } } }
             ])
         ]);
 
         const totalIncome = totalIncomeResult[0]?.total || 0;
-        const totalExpense = totalExpenseResult[0]?.total || 0;
+        const totalSalaryExpense = totalSalaryExpenseResult[0]?.total || 0;
+        const totalGeneralExpense = totalGeneralExpenseResult[0]?.total || 0;
+        const totalExpense = totalSalaryExpense + totalGeneralExpense;
 
         return NextResponse.json({
             students: studentsCount,

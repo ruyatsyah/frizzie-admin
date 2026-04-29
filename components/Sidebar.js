@@ -52,7 +52,8 @@ export default function Sidebar({ isOpen, setIsOpen, userRole }) {
                 title: "KEUANGAN",
                 items: [
                     { name: "Tagihan Siswa", path: "/billings", icon: <IconBilling /> },
-                    { name: "Gaji Guru", path: "/salaries", icon: <IconSalary /> }
+                    { name: "Gaji Guru", path: "/salaries", icon: <IconSalary /> },
+                    { name: "Pengeluaran", path: "/expenses", icon: <IconExpense /> }
                 ]
             }
         ] : [])
@@ -76,7 +77,7 @@ export default function Sidebar({ isOpen, setIsOpen, userRole }) {
                 display: 'flex',
                 flexDirection: 'column',
                 zIndex: 1000,
-                overflow: 'hidden',
+                overflow: 'visible', // Changed to visible to show the toggle arrow
                 flexShrink: 0,
                 boxShadow: '4px 0 10px rgba(0,0,0,0.02)',
                 position: 'relative',
@@ -85,90 +86,173 @@ export default function Sidebar({ isOpen, setIsOpen, userRole }) {
         >
 
 
-            {/* Header - Hamburger Left Aligned @ 22px */}
+            {/* Toggle Button - Ultra Minimalist Arrow (Match Reference Precisely) */}
+            <button 
+                onClick={() => setIsOpen(!isOpen)}
+                style={{
+                    position: 'absolute',
+                    right: '-14px',
+                    top: '32px',
+                    transform: `translateY(-50%) ${isOpen ? 'rotate(0deg)' : 'rotate(180deg)'}`,
+                    width: '28px',
+                    height: '28px',
+                    backgroundColor: '#ffffff',
+                    color: '#94A3B8',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    zIndex: 2000,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+                    transition: 'all 0.2s ease',
+                    padding: 0
+                }}
+                className="sidebar-arrow-toggle"
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#CBD5E1';
+                    e.currentTarget.style.color = '#64748B';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#E2E8F0';
+                    e.currentTarget.style.color = '#94A3B8';
+                }}
+            >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+
+            {/* Header - Logo and Brand Name */}
             <div style={{ 
-                height: '72px', 
+                height: '64px', 
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'flex-start',
-                borderBottom: '1px solid #F1F5F9',
-                paddingLeft: '22px' // User request: exactly 22px left
+                gap: '12px',
+                borderBottom: '1px solid var(--border)', // Consistent with Topbar
+                paddingLeft: '22px',
+                paddingRight: '20px',
+                overflow: 'hidden',
+                boxSizing: 'border-box',
+                backgroundColor: '#ffffff'
             }}>
-                <button 
-                    onClick={() => setIsOpen(!isOpen)}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: '#5A57DA',
-                        borderRadius: '10px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        transition: 'all 0.2s',
-                        width: '32px',
-                        height: '32px',
-                        padding: 0
-                    }}
-                    className="btn-sidebar-toggle"
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(90, 87, 218, 0.08)';
-                        e.currentTarget.style.transform = 'scale(1.1)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.transform = 'scale(1)';
-                    }}
-                >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
-                    </svg>
-                </button>
+                <div style={{ flexShrink: 0, width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img 
+                        src="/assets/logo-frizzie.png" 
+                        alt="Logo" 
+                        style={{ width: '100%', height: 'auto', objectFit: 'contain' }} 
+                    />
+                </div>
+                <span style={{ 
+                    fontSize: '18px', 
+                    fontWeight: 700, 
+                    color: '#78350f', 
+                    whiteSpace: 'nowrap',
+                    opacity: isOpen ? 1 : 0,
+                    transition: 'opacity 0.2s ease',
+                    letterSpacing: '-0.02em'
+                }}>
+                    FrizzieSmartClub
+                </span>
             </div>
 
-            {/* Navigation Body */}
-            <nav className="sidebar-nav" style={{ padding: '24px 0', flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-                {menuGroups.filter(Boolean).map((group) => (
-                    <div key={group.title} style={{ marginBottom: '24px' }}>
-                        <div style={{ 
-                            fontSize: '10px', 
-                            fontWeight: 700, 
-                            color: '#94A3B8', 
-                            letterSpacing: '0.15em',
-                            paddingLeft: '22px', // Align with hamburger
-                            marginBottom: '10px',
-                            opacity: isOpen ? 1 : 0,
-                            height: isOpen ? 'auto' : '0',
-                            overflow: 'hidden',
-                            transition: 'all 0.2s ease'
-                        }}>
-                            {group.title}
-                        </div>
-                        
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            {group.items.map((item) => (
-                                <div key={item.name} style={{ padding: '0 8px' }}>
-                                    {item.isDropdown ? (
-                                        <>
-                                            <div
-                                                onClick={() => {
-                                                    if (!isOpen) {
-                                                        setIsOpen(true);
-                                                        setAttendanceOpen(true);
-                                                    } else {
-                                                        setAttendanceOpen(!attendanceOpen);
-                                                    }
-                                                }}
+            {/* Navigation Body Wrapper to keep items clipped during transition */}
+            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <nav className="sidebar-nav" style={{ padding: '24px 0', flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+                    {menuGroups.filter(Boolean).map((group) => (
+                        <div key={group.title} style={{ marginBottom: '24px' }}>
+                            <div style={{ 
+                                fontSize: '10px', 
+                                fontWeight: 700, 
+                                color: '#94A3B8', 
+                                letterSpacing: '0.15em',
+                                paddingLeft: '22px', // Align with hamburger
+                                marginBottom: '10px',
+                                opacity: isOpen ? 1 : 0,
+                                height: isOpen ? 'auto' : '0',
+                                overflow: 'hidden',
+                                transition: 'all 0.2s ease'
+                            }}>
+                                {group.title}
+                            </div>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                {group.items.map((item) => (
+                                    <div key={item.name} style={{ padding: '0 8px' }}>
+                                        {item.isDropdown ? (
+                                            <>
+                                                <div
+                                                    onClick={() => {
+                                                        if (!isOpen) {
+                                                            setIsOpen(true);
+                                                            setAttendanceOpen(true);
+                                                        } else {
+                                                            setAttendanceOpen(!attendanceOpen);
+                                                        }
+                                                    }}
+                                                    style={{
+                                                        ...navItemStyle,
+                                                        ...(isParentActive(item.path) ? activeItemStyle : {}),
+                                                        paddingLeft: '14px', // 8px wrapper + 14px = 22px
+                                                        justifyContent: isOpen ? 'space-between' : 'flex-start',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                    title={!isOpen ? item.name : ''}
+                                                >
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                        <div style={{ width: '24px', height: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
+                                                            {item.icon}
+                                                        </div>
+                                                        <span style={{ 
+                                                            opacity: isOpen ? 1 : 0, 
+                                                            width: isOpen ? 'auto' : '0',
+                                                            overflow: 'hidden',
+                                                            transition: 'opacity 0.2s ease, width 0.3s ease',
+                                                            whiteSpace: 'nowrap',
+                                                            fontWeight: isParentActive(item.path) ? 600 : 500
+                                                        }}>
+                                                            {item.name}
+                                                        </span>
+                                                    </div>
+                                                    {isOpen && (
+                                                        <svg 
+                                                            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+                                                            style={{ transform: attendanceOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', marginRight: '10px' }}
+                                                        >
+                                                            <polyline points="6 9 12 15 18 9"></polyline>
+                                                        </svg>
+                                                    )}
+                                                </div>
+                                                {isOpen && attendanceOpen && (
+                                                    <div className="fade-in-up" style={{ paddingLeft: '40px', marginTop: '4px', borderLeft: '1.5px solid #F1F5F9', marginLeft: '26px' }}>
+                                                        {item.children.map((child) => (
+                                                            <Link
+                                                                key={child.path}
+                                                                href={child.path}
+                                                                style={{
+                                                                    ...subItemStyle,
+                                                                    ...(isActive(child.path) ? { color: '#78350f', fontWeight: 600 } : {})
+                                                                }}
+                                                            >
+                                                                {child.name}
+                                                            </Link>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <Link
+                                                href={item.path}
                                                 style={{
                                                     ...navItemStyle,
-                                                    ...(isParentActive(item.path) ? activeItemStyle : {}),
+                                                    ...(isActive(item.path) ? activeItemStyle : {}),
                                                     paddingLeft: '14px', // 8px wrapper + 14px = 22px
-                                                    justifyContent: isOpen ? 'space-between' : 'flex-start',
-                                                    cursor: 'pointer'
+                                                    justifyContent: 'flex-start'
                                                 }}
                                                 title={!isOpen ? item.name : ''}
                                             >
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                     <div style={{ width: '24px', height: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
                                                         {item.icon}
                                                     </div>
@@ -178,71 +262,20 @@ export default function Sidebar({ isOpen, setIsOpen, userRole }) {
                                                         overflow: 'hidden',
                                                         transition: 'opacity 0.2s ease, width 0.3s ease',
                                                         whiteSpace: 'nowrap',
-                                                        fontWeight: isParentActive(item.path) ? 600 : 500
+                                                        fontWeight: isActive(item.path) ? 600 : 500 
                                                     }}>
                                                         {item.name}
                                                     </span>
                                                 </div>
-                                                {isOpen && (
-                                                    <svg 
-                                                        width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-                                                        style={{ transform: attendanceOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', marginRight: '10px' }}
-                                                    >
-                                                        <polyline points="6 9 12 15 18 9"></polyline>
-                                                    </svg>
-                                                )}
-                                            </div>
-                                            {isOpen && attendanceOpen && (
-                                                <div className="fade-in-up" style={{ paddingLeft: '40px', marginTop: '4px', borderLeft: '1.5px solid #F1F5F9', marginLeft: '26px' }}>
-                                                    {item.children.map((child) => (
-                                                        <Link
-                                                            key={child.path}
-                                                            href={child.path}
-                                                            style={{
-                                                                ...subItemStyle,
-                                                                ...(isActive(child.path) ? { color: '#5A57DA', fontWeight: 600 } : {})
-                                                            }}
-                                                        >
-                                                            {child.name}
-                                                        </Link>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <Link
-                                            href={item.path}
-                                            style={{
-                                                ...navItemStyle,
-                                                ...(isActive(item.path) ? activeItemStyle : {}),
-                                                paddingLeft: '14px', // 8px wrapper + 14px = 22px
-                                                justifyContent: 'flex-start'
-                                            }}
-                                            title={!isOpen ? item.name : ''}
-                                        >
-                                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                <div style={{ width: '24px', height: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
-                                                    {item.icon}
-                                                </div>
-                                                <span style={{ 
-                                                    opacity: isOpen ? 1 : 0, 
-                                                    width: isOpen ? 'auto' : '0',
-                                                    overflow: 'hidden',
-                                                    transition: 'opacity 0.2s ease, width 0.3s ease',
-                                                    whiteSpace: 'nowrap',
-                                                    fontWeight: isActive(item.path) ? 600 : 500 
-                                                }}>
-                                                    {item.name}
-                                                </span>
-                                            </div>
-                                        </Link>
-                                    )}
-                                </div>
-                            ))}
+                                            </Link>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                ))}
-            </nav>
+                    ))}
+                </nav>
+            </div>
         </aside>
     );
 }
@@ -261,8 +294,8 @@ const navItemStyle = {
 };
 
 const activeItemStyle = {
-    backgroundColor: '#F0F0FF',
-    color: '#5A57DA',
+    backgroundColor: '#FFFBEB',
+    color: '#78350f',
 };
 
 const subItemStyle = {
@@ -298,4 +331,10 @@ const IconSalary = () => (
 );
 const IconEvaluasi = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
+);
+const IconExpense = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="12" y1="8" x2="12" y2="16" style={{ transform: 'rotate(45deg)', transformOrigin: 'center' }}/></svg>
+);
+const IconWeb = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
 );

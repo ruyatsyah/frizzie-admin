@@ -46,33 +46,6 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      {/* Welcome Banner */}
-      <div className="card" style={{ 
-        marginBottom: '32px', 
-        background: 'linear-gradient(135deg, var(--primary) 0%, #4338ca 100%)',
-        border: 'none',
-        color: 'white',
-        padding: '32px',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <h1 style={{ color: 'white', fontSize: '24px', marginBottom: '8px' }}>Selamat Datang, {user.name} 👋</h1>
-          <p style={{ opacity: 0.9, fontSize: '15px', maxWidth: '600px' }}>
-            Pantau ringkasan keuangan dan manajemen operasional FrizzieSmartClub secara real-time dari satu tempat.
-          </p>
-        </div>
-        {/* Decorative circle */}
-        <div style={{
-          position: 'absolute',
-          top: '-50px',
-          right: '-50px',
-          width: '200px',
-          height: '200px',
-          background: 'rgba(255,255,255,0.1)',
-          borderRadius: '50%'
-        }} />
-      </div>
 
       {/* Management Section */}
       <div style={{ marginBottom: '40px' }}>
