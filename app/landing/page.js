@@ -31,7 +31,7 @@ export default function LandingPage() {
             <Link href="#blogs">Blogs</Link>
           </div>
 
-          <Link href="/register" className="register-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Register</Link>
+          <Link href="/register" className="register-btn" style={{ textDecoration: 'none', alignItems: 'center', justifyContent: 'center' }}>Register</Link>
 
           {/* Mobile Hamburger */}
           <button 

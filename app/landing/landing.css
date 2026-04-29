@@ -60,6 +60,9 @@ html {
 }
 
 .register-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 10px 24px;
   border: 1.5px solid var(--landing-text);
   border-radius: 30px;
