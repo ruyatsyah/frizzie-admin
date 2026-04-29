@@ -657,6 +657,13 @@ h4 {
     gap: 24px;
 }
 
+@media (max-width: 1024px) {
+    /* Hide sidebar arrow when minimized on mobile/tablet */
+    .sidebar-closed .sidebar-arrow-toggle {
+        display: none !important;
+    }
+}
+
 @media (max-width: 768px) {
     .teacher-dashboard {
         padding: 16px 12px;
