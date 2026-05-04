@@ -268,7 +268,7 @@ export default function LearningOutcomesPage() {
             <style dangerouslySetInnerHTML={{ __html: `
                 .print-area { display: none; }
                 .kop-surat { text-align: center; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 20px; }
-                .kop-surat h2 { margin: 0; color: #5A57DA; }
+                .kop-surat h2 { margin: 0; color: #78350f; }
                 .kop-surat p { margin: 2px 0; font-size: 12px; }
 
                 @media print {
@@ -284,14 +284,14 @@ export default function LearningOutcomesPage() {
             `}} />
 
             {/* Print Layout */}
-            <div className="print-area" style={{ fontFamily: '"Inter", sans-serif', color: '#1a1a1a', lineHeight: 1.5 }}>
+            <div className="print-area" style={{ fontFamily: '"Inter", sans-serif', color: '#1a1a1a', lineHeight: 1.5, paddingBottom: '60px' }}>
                 <div style={{ textAlign: 'center', borderBottom: '4px double #111', paddingBottom: '16px', marginBottom: '32px' }}>
-                    <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 800, color: '#5A57DA' }}>FrizzieSmartClub</h1>
+                    <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 800, color: '#78350f' }}>FrizzieSmartClub</h1>
                     <p style={{ margin: '4px 0', fontSize: '13px', color: '#666', fontWeight: 500 }}>BIMBINGAN BELAJAR TERBAIK & TERPERCAYA</p>
                     <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Kp. Bojong No.135 RT. 02/RW. 01 Sukamukti, Katapang, Bandung</p>
                 </div>
                 
-                <h3 style={{ textAlign: 'center', margin: '0 0 30px', fontSize: '20px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>LAPORAN CAPAIAN PEMBELAJARAN</h3>
+                <h3 style={{ textAlign: 'center', margin: '0 0 30px', fontSize: '20px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#78350f' }}>LAPORAN CAPAIAN PEMBELAJARAN</h3>
                 
                 <div style={{ marginBottom: '20px', fontSize: '14px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '12px' }}>
                     <div><span style={{ color: '#666' }}>Siswa:</span> <strong style={{ fontSize: '16px' }}>{getSelectedStudentName()}</strong></div>
@@ -311,38 +311,36 @@ export default function LearningOutcomesPage() {
                         {list.length === 0 ? (
                             <tr><td colSpan="4" style={{ padding: '30px', textAlign: 'center', color: '#999' }}>Tidak ada data capaian dalam periode ini.</td></tr>
                         ) : list.map((item, index) => (
-                            <tr key={item._id}>
+                            <tr key={item._id} style={{ pageBreakInside: 'avoid' }}>
                                 <td style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>{index + 1}</td>
                                 <td style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>{new Date(item.date).toLocaleDateString("id-ID")}</td>
                                 <td style={{ padding: '12px' }}>
-                                    <div style={{ fontWeight: 700, fontSize: '14px' }}>{item.subject}</div>
-                                    <div style={{ fontSize: '12px', color: '#555' }}>{item.material}</div>
+                                    <div style={{ fontWeight: 700, fontSize: '14px', color: '#78350f' }}>{item.subject}</div>
+                                    <div style={{ fontSize: '12px', color: '#555', lineHeight: '1.4' }}>{item.material}</div>
                                 </td>
-                                <td style={{ padding: '12px', fontSize: '13px' }}>{item.achievement}</td>
+                                <td style={{ padding: '12px', fontSize: '13px', lineHeight: '1.4' }}>{item.achievement}</td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
 
-                <div style={{ pageBreakInside: 'avoid' }}>
-                    <h4 style={{ marginBottom: '12px', fontSize: '15px', color: '#5A57DA' }}>HASIL EVALUASI & PENILAIAN:</h4>
-                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }} border="1">
-                        <tbody>
-                            <tr>
-                                <td style={{ padding: '12px', fontWeight: 700, width: '30%', backgroundColor: '#f8fafc' }}>Progres Belajar</td>
-                                <td style={{ padding: '12px', whiteSpace: 'pre-wrap' }}>{evaluationData.progresBelajar || "-"}</td>
-                            </tr>
-                            <tr>
-                                <td style={{ padding: '12px', fontWeight: 700, backgroundColor: '#f8fafc' }}>Kebutuhan Ditingkatkan</td>
-                                <td style={{ padding: '12px', whiteSpace: 'pre-wrap' }}>{evaluationData.kebutuhanDitingkatkan || "-"}</td>
-                            </tr>
-                            <tr>
-                                <td style={{ padding: '12px', fontWeight: 700, backgroundColor: '#f8fafc' }}>Saran & Pengembangan</td>
-                                <td style={{ padding: '12px', whiteSpace: 'pre-wrap' }}>{evaluationData.saranPengembangan || "-"}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <h4 style={{ marginBottom: '12px', fontSize: '15px', color: '#78350f', pageBreakAfter: 'avoid' }}>HASIL EVALUASI & PENILAIAN:</h4>
+                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }} border="1">
+                    <tbody>
+                        <tr style={{ pageBreakInside: 'avoid' }}>
+                            <td style={{ padding: '12px', fontWeight: 700, width: '30%', backgroundColor: '#f8fafc' }}>Progres Belajar</td>
+                            <td style={{ padding: '12px', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{evaluationData.progresBelajar || "-"}</td>
+                        </tr>
+                        <tr style={{ pageBreakInside: 'avoid' }}>
+                            <td style={{ padding: '12px', fontWeight: 700, backgroundColor: '#f8fafc' }}>Kebutuhan Ditingkatkan</td>
+                            <td style={{ padding: '12px', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{evaluationData.kebutuhanDitingkatkan || "-"}</td>
+                        </tr>
+                        <tr style={{ pageBreakInside: 'avoid' }}>
+                            <td style={{ padding: '12px', fontWeight: 700, backgroundColor: '#f8fafc' }}>Saran & Pengembangan</td>
+                            <td style={{ padding: '12px', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{evaluationData.saranPengembangan || "-"}</td>
+                        </tr>
+                    </tbody>
+                </table>
 
                 <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'flex-end', pageBreakInside: 'avoid' }}>
                     <div style={{ textAlign: 'center', width: '200px' }}>

@@ -144,7 +144,7 @@ export default function AppLayout({ children }) {
                     }}
                 />
                 
-                <div style={{ 
+                <div className="no-print" style={{ 
                     backgroundColor: '#ffffff', 
                     borderBottom: '1px solid var(--border)',
                     padding: '12px 24px',

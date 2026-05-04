@@ -77,14 +77,15 @@ export default function ManageEvaluationsPage() {
     const handlePrint = async (ev) => {
         try {
             // Fetch Learning Outcomes for this period to populate the table
-            const res = await fetch(`/api/learning-outcomes?studentId=${ev.student?._id}&startDate=${ev.startDate.split('T')[0]}&endDate=${ev.endDate.split('T')[0]}`);
-            const cps = await res.json();
+            const res = await fetch(`/api/learning-outcomes?studentId=${ev.student?._id}&startDate=${ev.startDate.split('T')[0]}&endDate=${ev.endDate.split('T')[0]}&limit=100`);
+            const json = await res.json();
+            const cps = json.data || (Array.isArray(json) ? json : []);
             
             setPrintData({
                 studentName: ev.student?.name,
                 startDate: new Date(ev.startDate).toLocaleDateString("id-ID"),
                 endDate: new Date(ev.endDate).toLocaleDateString("id-ID"),
-                cps: Array.isArray(cps) ? cps : [],
+                cps: cps,
                 evaluation: ev
             });
 
@@ -120,64 +121,64 @@ export default function ManageEvaluationsPage() {
         <div className="ripple-effect">
 
             {/* Hidden Print Layout */}
-            <div className="print-area" style={{ width: '100%', padding: '0 20px' }}>
+            <div className="print-area" style={{ width: '100%', padding: '0 20px 60px 20px' }}>
                 <div className="kop-surat">
-                    <h2 style={{ fontSize: '28px', fontWeight: 800 }}>FrizzieSmartClub</h2>
+                    <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#78350f' }}>FrizzieSmartClub</h2>
                     <p>Kp. Bojong No.135 RT. 02/RW. 01 Sukamukti, Katapang</p>
                 </div>
                 
-                <h3 style={{ textAlign: 'center', margin: '30px 0', fontSize: '20px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>LAPORAN CAPAIAN PEMBELAJARAN</h3>
+                <h3 style={{ textAlign: 'center', margin: '30px 0', fontSize: '20px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#78350f' }}>LAPORAN CAPAIAN PEMBELAJARAN</h3>
                 
                 <div style={{ marginBottom: '15px', fontSize: '15px', display: 'flex', justifyContent: 'space-between' }}>
                     <div><strong>Siswa:</strong> {printData.studentName}</div>
                     <div><strong>Periode:</strong> {printData.startDate} - {printData.endDate}</div>
                 </div>
 
-                <h4 style={{ marginBottom: '8px', fontSize: '16px' }}>1. Rekap Capaian Pembelajaran:</h4>
+                <h4 style={{ marginBottom: '10px', fontSize: '16px', pageBreakAfter: 'avoid' }}>1. Rekap Capaian Pembelajaran:</h4>
                 <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px', border: '1px solid #333' }} border="1">
                     <thead>
                         <tr style={{ backgroundColor: '#f8fafc' }}>
-                            <th style={{ padding: '12px', textAlign: 'center', width: '20%' }}>Tanggal</th>
-                            <th style={{ padding: '12px', textAlign: 'center', width: '50%' }}>Mata Pelajaran / Materi</th>
-                            <th style={{ padding: '12px', textAlign: 'center', width: '30%' }}>Capaian</th>
+                            <th style={{ padding: '10px 8px', textAlign: 'center', width: '15%', fontSize: '13px', textTransform: 'uppercase' }}>Tanggal</th>
+                            <th style={{ padding: '10px 8px', textAlign: 'center', width: '45%', fontSize: '13px', textTransform: 'uppercase' }}>Mata Pelajaran / Materi</th>
+                            <th style={{ padding: '10px 8px', textAlign: 'center', width: '40%', fontSize: '13px', textTransform: 'uppercase' }}>Capaian</th>
                         </tr>
                     </thead>
                     <tbody>
                         {printData.cps.length === 0 ? (
-                            <tr><td colSpan="3" style={{ padding: '30px', textAlign: 'center' }}>Tidak ada data capaian pembelajaran.</td></tr>
+                            <tr><td colSpan="3" style={{ padding: '20px', textAlign: 'center' }}>Tidak ada data capaian pembelajaran.</td></tr>
                         ) : printData.cps.map(cp => (
-                            <tr key={cp._id}>
-                                <td style={{ padding: '12px', textAlign: 'center', verticalAlign: 'middle' }}>{cp.date ? new Date(cp.date).toLocaleDateString("id-ID") : "-"}</td>
-                                <td style={{ padding: '12px' }}>
-                                    <div style={{ fontWeight: 700, fontSize: '15px', marginBottom: '2px' }}>{cp.subject}</div>
-                                    <div style={{ fontSize: '12px', color: '#444' }}>{cp.material}</div>
+                            <tr key={cp._id} style={{ pageBreakInside: 'avoid' }}>
+                                <td style={{ padding: '10px 8px', textAlign: 'center', verticalAlign: 'middle', fontSize: '13px' }}>{cp.date ? new Date(cp.date).toLocaleDateString("id-ID") : "-"}</td>
+                                <td style={{ padding: '10px 8px' }}>
+                                    <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '2px', color: '#78350f' }}>{cp.subject}</div>
+                                    <div style={{ fontSize: '12px', color: '#444', lineHeight: '1.4' }}>{cp.material}</div>
                                 </td>
-                                <td style={{ padding: '12px', verticalAlign: 'middle' }}>{cp.achievement}</td>
+                                <td style={{ padding: '10px 8px', verticalAlign: 'middle', fontSize: '13px', lineHeight: '1.4' }}>{cp.achievement}</td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
 
-                <h4 style={{ marginBottom: '8px' }}>2. Hasil Evaluasi & Penilaian:</h4>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }} border="1">
+                <h4 style={{ marginBottom: '10px', fontSize: '16px', pageBreakAfter: 'avoid', marginTop: '10px' }}>2. Hasil Evaluasi & Penilaian:</h4>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', border: '1px solid #333' }} border="1">
                     <thead>
                         <tr style={{ backgroundColor: '#f2f2f2' }}>
-                            <th style={{ padding: '8px', width: '30%', textAlign: 'left' }}>Aspek Penilaian</th>
-                            <th style={{ padding: '8px', textAlign: 'left' }}>Keterangan</th>
+                            <th style={{ padding: '10px 12px', width: '30%', textAlign: 'left', textTransform: 'uppercase' }}>Aspek Penilaian</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'left', textTransform: 'uppercase' }}>Keterangan</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td style={{ padding: '8px', fontWeight: 600 }}>Progres Belajar</td>
-                            <td style={{ padding: '8px' }}>{printData.evaluation?.progresBelajar || "-"}</td>
+                        <tr style={{ pageBreakInside: 'avoid' }}>
+                            <td style={{ padding: '10px 12px', fontWeight: 600, backgroundColor: '#fafafa' }}>Progres Belajar</td>
+                            <td style={{ padding: '10px 12px', lineHeight: '1.5' }}>{printData.evaluation?.progresBelajar || "-"}</td>
                         </tr>
-                        <tr>
-                            <td style={{ padding: '8px', fontWeight: 600 }}>Kebutuhan ditingkatkan</td>
-                            <td style={{ padding: '8px' }}>{printData.evaluation?.kebutuhanDitingkatkan || "-"}</td>
+                        <tr style={{ pageBreakInside: 'avoid' }}>
+                            <td style={{ padding: '10px 12px', fontWeight: 600, backgroundColor: '#fafafa' }}>Kebutuhan ditingkatkan</td>
+                            <td style={{ padding: '10px 12px', lineHeight: '1.5' }}>{printData.evaluation?.kebutuhanDitingkatkan || "-"}</td>
                         </tr>
-                        <tr>
-                            <td style={{ padding: '8px', fontWeight: 600 }}>Saran Pengembangan</td>
-                            <td style={{ padding: '8px' }}>{printData.evaluation?.saranPengembangan || "-"}</td>
+                        <tr style={{ pageBreakInside: 'avoid' }}>
+                            <td style={{ padding: '10px 12px', fontWeight: 600, backgroundColor: '#fafafa' }}>Saran Pengembangan</td>
+                            <td style={{ padding: '10px 12px', lineHeight: '1.5' }}>{printData.evaluation?.saranPengembangan || "-"}</td>
                         </tr>
                     </tbody>
                 </table>

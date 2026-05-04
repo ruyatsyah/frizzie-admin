@@ -704,7 +704,7 @@ h4 {
     padding-bottom: 16px; 
     margin-bottom: 32px; 
 }
-.kop-surat h2 { margin: 0; color: var(--primary); }
+.kop-surat h2 { margin: 0; color: var(--brand); }
 .kop-surat p { margin: 4px 0; font-size: 13px; color: #666; }
 
 @media print {
