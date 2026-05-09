@@ -7,6 +7,7 @@ const ExpenseSchema = new mongoose.Schema(
         date: { type: Date, required: true, default: Date.now },
         category: { type: String, default: "Lainnya" },
         description: { type: String },
+        salaryId: { type: mongoose.Schema.Types.ObjectId, ref: "Salary" },
     },
     { timestamps: true }
 );

@@ -24,7 +24,8 @@ export default function LearningOutcomesPage() {
     const [adminFilters, setAdminFilters] = useState({
         studentId: "",
         startDate: "",
-        endDate: ""
+        endDate: "",
+        month: new Date().toISOString().slice(0, 7) // Set current month (YYYY-MM)
     });
     const [evaluationData, setEvaluationData] = useState({
         progresBelajar: "",
@@ -44,9 +45,15 @@ export default function LearningOutcomesPage() {
 
     // SWR Data Fetching
     const tId = user?.teacherId || (user?.role === 'teacher' ? user?.id : null);
-    const swrKey = user?.role === 'teacher' && tId 
-        ? `/api/learning-outcomes?teacherId=${tId}&page=${page}&limit=10`
-        : `/api/learning-outcomes?studentId=${adminFilters.studentId}&startDate=${adminFilters.startDate}&endDate=${adminFilters.endDate}&page=${page}&limit=10`;
+    const isAdminFilterActive = adminFilters.studentId || adminFilters.startDate || adminFilters.endDate || adminFilters.month;
+    
+    const swrKey = mounted && user 
+        ? (user.role === 'teacher' && tId 
+            ? `/api/learning-outcomes?teacherId=${tId}&page=${page}&limit=10`
+            : (isAdminFilterActive 
+                ? `/api/learning-outcomes?studentId=${adminFilters.studentId}&startDate=${adminFilters.startDate}&endDate=${adminFilters.endDate}&month=${adminFilters.month}&page=${page}&limit=10`
+                : null))
+        : null;
 
     const { data: swrData, error: swrError, isLoading: swrLoading } = useSWR(mounted && user ? swrKey : null, fetcher);
     const list = swrData?.data || [];
@@ -153,14 +160,16 @@ export default function LearningOutcomesPage() {
             const method = editingId ? "PUT" : "POST";
             const url = editingId ? `/api/learning-outcomes/${editingId}` : "/api/learning-outcomes";
             
+            const payload = { ...formData };
+            // Only set teacher if it's not already set (e.g. for new records by teacher)
+            if (!payload.teacher) {
+                payload.teacher = user.teacherId || user.id;
+            }
+            
             const res = await fetch(url, {
                 method: method,
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    ...formData, 
-                    teacher: user.teacherId || user.id,
-                    sessionId: formData.sessionId 
-                })
+                body: JSON.stringify(payload)
             });
 
             if (res.ok) {
@@ -182,7 +191,8 @@ export default function LearningOutcomesPage() {
             material: item.material || "",
             achievement: item.achievement || "",
             date: new Date(item.date).toISOString().split('T')[0],
-            sessionId: item.sessionId
+            sessionId: item.sessionId,
+            teacher: item.teacher?._id || item.teacher || ""
         });
         setIsModalOpen(true);
     };
@@ -246,11 +256,6 @@ export default function LearningOutcomesPage() {
             <td><div className="skeleton" style={{ height: '18px', width: '80px' }}></div></td>
             {user?.role === 'admin' && <td><div className="skeleton" style={{ height: '18px', width: '100px' }}></div></td>}
             <td><div className="skeleton" style={{ height: '18px', width: '120px' }}></div></td>
-            <td>
-                <div className="skeleton" style={{ height: '18px', width: '100px', marginBottom: '4px' }}></div>
-                <div className="skeleton" style={{ height: '14px', width: '150px' }}></div>
-            </td>
-            <td><div className="skeleton" style={{ height: '18px', width: '200px' }}></div></td>
             {user?.role === 'teacher' && <td><div className="skeleton" style={{ height: '24px', width: '60px', borderRadius: '6px' }}></div></td>}
             <td style={{ textAlign: 'right' }}><div className="skeleton" style={{ height: '32px', width: '80px', marginLeft: 'auto' }}></div></td>
         </tr>
@@ -379,16 +384,24 @@ export default function LearningOutcomesPage() {
 
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <input
+                                        type="month"
+                                        value={adminFilters.month}
+                                        onChange={(e) => setAdminFilters({ ...adminFilters, month: e.target.value, startDate: "", endDate: "" })}
+                                        style={{ height: '38px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', backgroundColor: '#F9FAFB', fontWeight: 500 }}
+                                        title="Filter per bulan"
+                                    />
+                                    <span style={{ color: '#94A3B8', fontSize: '11px' }}>atau</span>
+                                    <input
                                         type="date"
                                         value={adminFilters.startDate}
-                                        onChange={(e) => setAdminFilters({ ...adminFilters, startDate: e.target.value })}
+                                        onChange={(e) => setAdminFilters({ ...adminFilters, startDate: e.target.value, month: "" })}
                                         style={{ height: '38px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', backgroundColor: '#F9FAFB', fontWeight: 500 }}
                                     />
                                     <span style={{ color: '#94A3B8', fontSize: '12px' }}>s/d</span>
                                     <input
                                         type="date"
                                         value={adminFilters.endDate}
-                                        onChange={(e) => setAdminFilters({ ...adminFilters, endDate: e.target.value })}
+                                        onChange={(e) => setAdminFilters({ ...adminFilters, endDate: e.target.value, month: "" })}
                                         style={{ height: '38px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', backgroundColor: '#F9FAFB', fontWeight: 500 }}
                                     />
                                 </div>
@@ -417,8 +430,7 @@ export default function LearningOutcomesPage() {
                                     <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TANGGAL</th>
                                     {user?.role === 'admin' && <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>GURU</th>}
                                     <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>NAMA MURID</th>
-                                    <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>MATA PELAJARAN / MATERI</th>
-                                    <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>CAPAIAN</th>
+                                    <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>MATA PELAJARAN</th>
                                     {user?.role === 'teacher' && <th style={{ verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>STATUS</th>}
                                     <th style={{ textAlign: "right", verticalAlign: 'middle', borderBottom: 'none', padding: '16px', color: '#64748B', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AKSI</th>
                                 </tr>
@@ -430,22 +442,24 @@ export default function LearningOutcomesPage() {
                                         <SkeletonRow />
                                         <SkeletonRow />
                                     </>
-                                ) : list.length === 0 ? (
+                                ) : (list.length === 0 && (isAdminFilterActive || user?.role === 'teacher')) ? (
                                     <tr><td colSpan="8" align="center">Belum ada rekap capaian.</td></tr>
+                                ) : (list.length === 0 && user?.role === 'admin' && !isAdminFilterActive) ? (
+                                    <tr><td colSpan="8" align="center" style={{ color: '#94A3B8', padding: '40px' }}>Silakan pilih murid atau filter bulan untuk menampilkan data.</td></tr>
                                 ) : list.map((item, index) => (
                                     <tr key={item._id || `${item.sessionId}-${item.student?._id || 'unknown'}-${Math.random()}`}>
                                         <td style={{ textAlign: 'center', color: '#94A3B8', fontSize: '12px', verticalAlign: 'middle', padding: '8px 16px' }}>
                                             {(page - 1) * 10 + index + 1}
                                         </td>
                                         <td style={{ verticalAlign: 'middle', padding: '8px 16px' }}>{new Date(item.date).toLocaleDateString("id-ID")}</td>
-                                        {user?.role === 'admin' && <td style={{ fontWeight: 500, verticalAlign: 'middle', padding: '8px 16px' }}>{item.teacher?.name}</td>}
+                                        {user?.role === 'admin' && (
+                                            <td style={{ fontWeight: 500, verticalAlign: 'middle', padding: '8px 16px' }}>
+                                                {item.teacher?.name || <span style={{ color: '#94A3B8', fontStyle: 'italic', fontSize: '11px' }}>Guru Terhapus</span>}
+                                            </td>
+                                        )}
                                         <td style={{ fontWeight: 500, verticalAlign: 'middle', padding: '8px 16px' }}>{item.student?.name}</td>
                                         <td style={{ verticalAlign: 'middle', padding: '8px 16px' }}>
                                             <div style={{ fontWeight: 600 }}>{item.subject}</div>
-                                            <div style={{ fontSize: '11px', color: 'var(--text-light)' }}>{item.material || "Belum diisi"}</div>
-                                        </td>
-                                        <td style={{ fontSize: '12px', maxWidth: '300px', verticalAlign: 'middle', padding: '8px 16px' }}>
-                                            {item.achievement ? `"${item.achievement}"` : "-"}
                                         </td>
                                         {user?.role === 'teacher' && (
                                             <td style={{ verticalAlign: 'middle', padding: '8px 16px' }}>
@@ -629,7 +643,7 @@ export default function LearningOutcomesPage() {
                     </div>
                     <div>
                         <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', fontWeight: 600 }}>Materi Pembelajaran</label>
-                        <input type="text" placeholder="Contoh: Penjumlahan Pecahan, Alphabet, dll" value={formData.material} onChange={(e) => setFormData({...formData, material: e.target.value})} required />
+                        <textarea placeholder="Contoh: Penjumlahan Pecahan, Alphabet, dll" value={formData.material} onChange={(e) => setFormData({...formData, material: e.target.value})} required style={{ height: '80px' }} />
                     </div>
                     <div>
                         <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', fontWeight: 600 }}>Hasil Capaian / Catatan</label>
@@ -670,7 +684,7 @@ export default function LearningOutcomesPage() {
 function SkeletonRow() {
     return (
         <tr>
-            {Array(7).fill(0).map((_, i) => (
+            {Array(5).fill(0).map((_, i) => (
                 <td key={i} style={{ padding: '16px' }}>
                     <div className="skeleton" style={{ height: '20px', width: i === 0 ? '30px' : i === 1 ? '80px' : '100%' }}></div>
                 </td>

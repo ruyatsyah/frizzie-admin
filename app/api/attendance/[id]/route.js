@@ -4,8 +4,9 @@ import Attendance from "@/models/Attendance";
 import Salary from "@/models/Salary";
 import Teacher from "@/models/Teacher";
 import Student from "@/models/Student";
+import Setting from "@/models/Setting";
 
-const RATE_PER_STUDENT = 10000;
+const DEFAULT_RATE_PER_STUDENT = 10000;
 
 const getMonthYearString = (date) => {
     const months = [
@@ -41,7 +42,8 @@ export async function PUT(req, { params }) {
         // 2. Revert Old Salary (Subtract)
         const oldHadirCount = (oldAttendance.studentsTaught || []).filter(s => s.status === "Hadir").length;
         if (oldSalary && oldHadirCount > 0) {
-            oldSalary.amount -= oldHadirCount * RATE_PER_STUDENT;
+            const oldRate = oldSalary.sessions > 0 ? (oldSalary.amount / oldSalary.sessions) : DEFAULT_RATE_PER_STUDENT;
+            oldSalary.amount -= oldHadirCount * oldRate;
             oldSalary.sessions -= oldHadirCount;
             
             if (oldSalary.sessions <= 0 && oldSalary.amount <= 0) {
@@ -65,8 +67,15 @@ export async function PUT(req, { params }) {
         const newHadirCount = (studentsTaught || []).filter(s => s.status === "Hadir").length;
 
         if (newHadirCount > 0) {
+            // Fetch dynamic rate from Settings
+            let ratePerStudent = DEFAULT_RATE_PER_STUDENT;
+            const rateSetting = await Setting.findOne({ key: "ratePerStudent" });
+            if (rateSetting && rateSetting.value) {
+                ratePerStudent = Number(rateSetting.value);
+            }
+
             let newSalary = await Salary.findOne({ teacher, monthYear: newMonthYear });
-            const amountToAdd = newHadirCount * RATE_PER_STUDENT;
+            const amountToAdd = newHadirCount * ratePerStudent;
 
             if (newSalary) {
                 // Check if NEW month is also paid (in case user changed date to a different paid month)
@@ -116,9 +125,11 @@ export async function DELETE(req, { params }) {
 
         // Revert salary changes
         const hadirCount = (attendance.studentsTaught || []).filter(s => s.status === "Hadir").length;
-        const salaryAmount = hadirCount * RATE_PER_STUDENT;
-
-        if (salaryAmount > 0 && salary) {
+        
+        if (hadirCount > 0 && salary) {
+            const currentRate = salary.sessions > 0 ? (salary.amount / salary.sessions) : DEFAULT_RATE_PER_STUDENT;
+            const salaryAmount = hadirCount * currentRate;
+            
             salary.amount -= salaryAmount;
             salary.sessions -= hadirCount;
             

@@ -233,7 +233,7 @@ export default function AttendancePage() {
                                     <th style={{ width: '150px', verticalAlign: 'middle', borderBottom: '2px solid #E2E8F0', color: '#4A5568' }}>Tanggal</th>
                                     <th style={{ verticalAlign: 'middle', borderBottom: '2px solid #E2E8F0', color: '#4A5568' }}>Guru Pengajar</th>
                                     <th style={{ verticalAlign: 'middle', borderBottom: '2px solid #E2E8F0', color: '#4A5568' }}>Detail Sesi</th>
-                                    <th style={{ verticalAlign: 'middle', borderBottom: '2px solid #E2E8F0', color: '#4A5568' }}>Status Laporan (CP)</th>
+                                    <th style={{ width: '80px', textAlign: 'center', verticalAlign: 'middle', borderBottom: '2px solid #E2E8F0', color: '#4A5568' }}>CP</th>
                                     <th style={{ verticalAlign: 'middle', borderBottom: '2px solid #E2E8F0', color: '#4A5568' }}>Lokasi/Catatan</th>
                                     <th style={{ textAlign: "right", width: '100px', verticalAlign: 'middle', borderBottom: '2px solid #E2E8F0', color: '#4A5568' }}>Aksi</th>
                                 </tr>
@@ -268,22 +268,19 @@ export default function AttendancePage() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td style={{ verticalAlign: 'middle', padding: '12px 8px' }}>
+                                        <td style={{ verticalAlign: 'middle', textAlign: 'center', padding: '12px 8px' }}>
                                             <span style={{ 
-                                                padding: '3px 10px', 
-                                                borderRadius: '99px', 
+                                                padding: '2px 8px', 
+                                                borderRadius: '6px', 
                                                 fontSize: '11px', 
-                                                fontWeight: 700,
+                                                fontWeight: 800,
                                                 backgroundColor: item.cpCount >= item.studentCount ? '#DCFCE7' : (item.cpCount > 0 ? '#FEF9C3' : '#FEE2E2'),
                                                 color: item.cpCount >= item.studentCount ? '#166534' : (item.cpCount > 0 ? '#854D0E' : '#991B1B'),
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '6px'
                                             }}>
-                                                {item.cpCount >= item.studentCount ? '✓ Lengkap' : (item.cpCount > 0 ? '○ Sebagian' : '✕ Belum')}
-                                                <span style={{ opacity: 0.7, fontSize: '9px' }}>{item.cpCount}/{item.studentCount}</span>
+                                                {item.cpCount}/{item.studentCount}
                                             </span>
                                         </td>
+
                                         <td style={{ color: '#64748B', fontSize: '12px', verticalAlign: 'middle', padding: '12px 8px' }}>
                                             <div style={{ fontStyle: item.notes ? 'normal' : 'italic', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.notes || "Tidak ada catatan"}</div>
                                         </td>

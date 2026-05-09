@@ -5,8 +5,9 @@ import Attendance from "@/models/Attendance";
 import Salary from "@/models/Salary";
 import Teacher from "@/models/Teacher";
 import Student from "@/models/Student";
+import Setting from "@/models/Setting";
 
-const RATE_PER_STUDENT = 10000;
+const DEFAULT_RATE_PER_STUDENT = 10000;
 
 const getMonthYearString = (date) => {
     const months = [
@@ -99,9 +100,16 @@ export async function POST(req) {
         const body = await req.json();
         const { teacher, date, studentsTaught, notes } = body;
 
+        // Fetch dynamic rate from Settings
+        let ratePerStudent = DEFAULT_RATE_PER_STUDENT;
+        const rateSetting = await Setting.findOne({ key: "ratePerStudent" });
+        if (rateSetting && rateSetting.value) {
+            ratePerStudent = Number(rateSetting.value);
+        }
+
         // Calculate salary increment
         const hadirCount = (studentsTaught || []).filter(s => s.status === "Hadir").length;
-        const salaryAmount = hadirCount * RATE_PER_STUDENT;
+        const salaryAmount = hadirCount * ratePerStudent;
 
         let linkedSalaryId = null;
 

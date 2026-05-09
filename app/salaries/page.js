@@ -4,12 +4,21 @@ import useSWR, { mutate } from "swr";
 import fetcher from "@/lib/fetcher";
 import { showToast } from "@/components/Toast";
 import ConfirmModal from "@/components/ConfirmModal";
+import FormModal from "@/components/FormModal";
 
 export default function SalariesPage() {
     const [page, setPage] = useState(1);
     const [mounted, setMounted] = useState(false);
     const [printData, setPrintData] = useState(null);
     const [toggleData, setToggleData] = useState(null); // For status toggle confirmation
+
+    const [rateSettingModal, setRateSettingModal] = useState(false);
+    const [rateInputValue, setRateInputValue] = useState("");
+    const [isSavingRate, setIsSavingRate] = useState(false);
+
+    // SWR for Settings
+    const { data: settingsData, mutate: mutateSettings } = useSWR(mounted ? "/api/settings" : null, fetcher);
+    const currentRate = settingsData?.ratePerStudent ? Number(settingsData.ratePerStudent) : 10000;
 
     // SWR for Salaries
     const apiUrl = `/api/salaries?page=${page}&limit=10`;
@@ -52,6 +61,35 @@ export default function SalariesPage() {
         }
     };
 
+    const saveRateSetting = async () => {
+        const newRate = Number(rateInputValue);
+        if (isNaN(newRate) || newRate <= 0) {
+            showToast("Nominal honor tidak valid", "error");
+            return;
+        }
+
+        setIsSavingRate(true);
+        try {
+            const res = await fetch("/api/settings", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ratePerStudent: newRate }),
+            });
+
+            if (res.ok) {
+                showToast("Honor per murid berhasil diperbarui");
+                setRateSettingModal(false);
+                mutateSettings();
+            } else {
+                showToast("Gagal memperbarui honor", "error");
+            }
+        } catch (e) {
+            showToast("Terjadi kesalahan", "error");
+        } finally {
+            setIsSavingRate(true);
+        }
+    };
+
     const handlePrint = (salary) => {
         setPrintData(salary);
         setTimeout(() => {
@@ -80,15 +118,28 @@ export default function SalariesPage() {
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h1 className="page-title" style={{ margin: 0 }}>Laporan Gaji Guru</h1>
-                <div style={{ fontSize: '13px', color: 'var(--text-light)', backgroundColor: '#F0F0FF', padding: '8px 16px', borderRadius: '8px', color: '#5A57DA', fontWeight: 600 }}>
-                    Sistem Gaji Otomatis via Absensi
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <div style={{ fontSize: '13px', backgroundColor: '#F0F0FF', padding: '8px 16px', borderRadius: '8px', color: '#5A57DA', fontWeight: 600 }}>
+                        Sistem Gaji Otomatis via Absensi
+                    </div>
+                    <button 
+                        onClick={() => {
+                            setRateInputValue(currentRate.toString());
+                            setRateSettingModal(true);
+                        }}
+                        className="btn-primary" 
+                        style={{ height: '38px', padding: '0 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 500 }}
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        Atur Honor
+                    </button>
                 </div>
             </div>
 
             <div className="card no-print">
                 <div style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #F1F5F9' }}>
                     <p style={{ fontSize: '14px', color: 'var(--text-light)', margin: 0 }}>
-                        Data gaji di bawah ini dihitung otomatis berdasarkan jumlah kehadiran murid (Rp 10.000/murid). 
+                        Data gaji di bawah ini dihitung otomatis berdasarkan jumlah kehadiran murid (<strong>Rp {currentRate.toLocaleString("id-ID")}/murid</strong>). 
                         Anda tidak dapat menambah atau mengubah gaji secara manual dari sini.
                     </p>
                 </div>
@@ -218,7 +269,7 @@ export default function SalariesPage() {
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #eee' }}>
                             <span style={{ color: '#555' }}>Rate per Murid</span>
-                            <span style={{ fontWeight: 600 }}>Rp 10.000</span>
+                            <span style={{ fontWeight: 600 }}>Rp {printData.sessions > 0 ? (printData.amount / printData.sessions).toLocaleString("id-ID") : "0"}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '20px 0', borderBottom: '2px solid #5A57DA' }}>
                             <span style={{ fontWeight: 700, fontSize: '16px' }}>TOTAL HONOR</span>
@@ -242,6 +293,40 @@ export default function SalariesPage() {
                     variant="primary"
                 />
             )}
+
+            {/* Rate Setting Modal */}
+            <FormModal
+                isOpen={rateSettingModal}
+                onClose={() => setRateSettingModal(false)}
+                title="Atur Honor Per Murid"
+            >
+                <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                    <p style={{ fontSize: '14px', color: '#475569', margin: 0, lineHeight: 1.5 }}>
+                        Perubahan nominal ini akan berlaku untuk perhitungan gaji selanjutnya. Gaji yang sudah tercatat sebelumnya tidak akan berubah.
+                    </p>
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: '#475569' }}>Nominal Honor (Rp)</label>
+                        <input 
+                            type="number" 
+                            style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', width: '100%', fontSize: '14px', outline: 'none' }}
+                            value={rateInputValue}
+                            onChange={(e) => setRateInputValue(e.target.value)}
+                            placeholder="Contoh: 10000"
+                        />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '12px' }}>
+                        <button className="btn-outline" onClick={() => setRateSettingModal(false)} style={{ flex: 1 }}>Batal</button>
+                        <button 
+                            className="btn-primary" 
+                            onClick={saveRateSetting}
+                            disabled={isSavingRate || !rateInputValue}
+                            style={{ flex: 2 }}
+                        >
+                            {isSavingRate ? 'Menyimpan...' : 'Simpan Honor'}
+                        </button>
+                    </div>
+                </div>
+            </FormModal>
         </div>
     );
 }

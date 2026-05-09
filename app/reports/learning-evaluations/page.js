@@ -10,13 +10,14 @@ export default function ManageEvaluationsPage() {
     const [page, setPage] = useState(1);
     const [mounted, setMounted] = useState(false);
     const [search, setSearch] = useState("");
+    const [filterMonth, setFilterMonth] = useState("");
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedEval, setSelectedEval] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
 
     // SWR for Evaluations
-    const apiUrl = `/api/learning-evaluations?page=${page}&limit=10`;
+    const apiUrl = `/api/learning-evaluations?page=${page}&limit=10${filterMonth ? `&month=${filterMonth}` : ""}`;
     const { data: swrData, isLoading: loading } = useSWR(mounted ? apiUrl : null, fetcher);
     const evals = swrData?.data || [];
     const totalPages = swrData?.totalPages || 1;
@@ -199,16 +200,25 @@ export default function ManageEvaluationsPage() {
                         <h3 style={{ margin: 0, fontSize: '15.5px', fontWeight: 800, color: '#2D3748', letterSpacing: '-0.01em' }}>
                             Manajemen Evaluasi Pembelajaran
                         </h3>
-                        <div style={{ position: 'relative', minWidth: '240px', maxWidth: '320px', flex: 1 }}>
-                            <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', display: 'flex', pointerEvents: 'none' }}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        <div style={{ display: 'flex', gap: '12px', flex: 1, justifyContent: 'flex-end', flexWrap: 'nowrap', alignItems: 'center' }}>
+                            <div style={{ position: 'relative', flex: 1, minWidth: '150px', maxWidth: '320px' }}>
+                                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', display: 'flex', pointerEvents: 'none' }}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Cari nama murid..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    style={{ paddingLeft: '38px', height: '38px', borderRadius: '8px', border: '1px solid var(--border)', width: '100%', fontSize: '13px', outline: 'none', backgroundColor: '#F9FAFB' }}
+                                />
                             </div>
                             <input
-                                type="text"
-                                placeholder="Cari nama murid..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                style={{ paddingLeft: '38px', height: '38px', borderRadius: '8px', border: '1px solid var(--border)', width: '100%', fontSize: '13px', outline: 'none', backgroundColor: '#F9FAFB' }}
+                                type="month"
+                                value={filterMonth}
+                                onChange={(e) => { setFilterMonth(e.target.value); setPage(1); }}
+                                style={{ width: '135px', height: '38px', padding: '0 10px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', outline: 'none', backgroundColor: '#F9FAFB' }}
+                                title="Filter berdasarkan bulan"
                             />
                         </div>
                     </div>

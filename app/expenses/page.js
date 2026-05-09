@@ -27,10 +27,17 @@ export default function ExpensesPage() {
         try {
             const res = await fetch("/api/expenses");
             const data = await res.json();
-            setExpenses(data);
-            setLoading(false);
+            if (Array.isArray(data)) {
+                setExpenses(data);
+            } else {
+                setExpenses([]);
+                showToast(data.error || "Gagal memuat data", "error");
+            }
         } catch (error) {
+            setExpenses([]);
             showToast("Gagal mengambil data pengeluaran", "error");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -158,30 +165,38 @@ export default function ExpensesPage() {
                                         </td>
                                         <td style={{ textAlign: 'right', padding: '12px 24px 12px 16px' }}>
                                             <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-                                                <button 
-                                                    onClick={() => {
-                                                        setEditingExpense(expense);
-                                                        setFormData({
-                                                            title: expense.title,
-                                                            amount: expense.amount,
-                                                            date: new Date(expense.date).toISOString().split('T')[0],
-                                                            category: expense.category,
-                                                            description: expense.description || ""
-                                                        });
-                                                        setIsModalOpen(true);
-                                                    }}
-                                                    className="btn-action" 
-                                                    style={{ color: '#F59E0B' }}
-                                                >
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-                                                </button>
-                                                <button 
-                                                    onClick={() => setDeleteId(expense._id)}
-                                                    className="btn-action" 
-                                                    style={{ color: '#EF4444' }}
-                                                >
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                                                </button>
+                                                {!expense.salaryId ? (
+                                                    <>
+                                                        <button 
+                                                            onClick={() => {
+                                                                setEditingExpense(expense);
+                                                                setFormData({
+                                                                    title: expense.title,
+                                                                    amount: expense.amount,
+                                                                    date: new Date(expense.date).toISOString().split('T')[0],
+                                                                    category: expense.category,
+                                                                    description: expense.description || ""
+                                                                });
+                                                                setIsModalOpen(true);
+                                                            }}
+                                                            className="btn-action" 
+                                                            style={{ color: '#F59E0B' }}
+                                                            title="Edit"
+                                                        >
+                                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => setDeleteId(expense._id)}
+                                                            className="btn-action" 
+                                                            style={{ color: '#EF4444' }}
+                                                            title="Hapus"
+                                                        >
+                                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600 }}>Sistem Otomatis</span>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -238,6 +253,7 @@ export default function ExpensesPage() {
                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                         >
                             <option value="Operasional">Operasional</option>
+                            <option value="Gaji Guru">Gaji Guru</option>
                             <option value="Sarana Prasarana">Sarana Prasarana</option>
                             <option value="Kegiatan Siswa">Kegiatan Siswa</option>
                             <option value="Lainnya">Lainnya</option>

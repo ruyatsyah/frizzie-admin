@@ -16,14 +16,23 @@ export async function GET(req) {
             const page = parseInt(searchParams.get("page")) || 1;
             const limit = parseInt(searchParams.get("limit")) || 10;
             const skip = (page - 1) * limit;
+            const month = searchParams.get("month");
+
+            const query = {};
+            if (month) {
+                const [year, m] = month.split('-');
+                const startOfMonth = new Date(year, m - 1, 1);
+                const endOfMonth = new Date(year, m, 1);
+                query.createdAt = { $gte: startOfMonth, $lt: endOfMonth };
+            }
 
             const [data, total] = await Promise.all([
-                LearningEvaluation.find({})
+                LearningEvaluation.find(query)
                     .sort({ createdAt: -1 })
                     .populate("student", "name")
                     .skip(skip)
                     .limit(limit),
-                LearningEvaluation.countDocuments({})
+                LearningEvaluation.countDocuments(query)
             ]);
 
             return NextResponse.json({

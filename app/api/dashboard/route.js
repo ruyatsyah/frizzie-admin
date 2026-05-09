@@ -17,8 +17,7 @@ export async function GET() {
             unpaidBillings,
             unpaidSalaries,
             totalIncomeResult,
-            totalSalaryExpenseResult,
-            totalGeneralExpenseResult
+            totalExpenseResult
         ] = await Promise.all([
             Student.countDocuments(),
             Teacher.countDocuments(),
@@ -28,19 +27,13 @@ export async function GET() {
                 { $match: { status: "Lunas" } },
                 { $group: { _id: null, total: { $sum: "$amount" } } }
             ]),
-            Salary.aggregate([
-                { $match: { status: "Sudah Dibayar" } },
-                { $group: { _id: null, total: { $sum: "$amount" } } }
-            ]),
             Expense.aggregate([
                 { $group: { _id: null, total: { $sum: "$amount" } } }
             ])
         ]);
 
         const totalIncome = totalIncomeResult[0]?.total || 0;
-        const totalSalaryExpense = totalSalaryExpenseResult[0]?.total || 0;
-        const totalGeneralExpense = totalGeneralExpenseResult[0]?.total || 0;
-        const totalExpense = totalSalaryExpense + totalGeneralExpense;
+        const totalExpense = totalExpenseResult[0]?.total || 0;
 
         return NextResponse.json({
             students: studentsCount,
